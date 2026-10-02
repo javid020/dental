@@ -1,0 +1,1486 @@
+<!doctype html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stomatoloji Klinika — MVP prototipi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#1d5bd8;--primary-600:#174bb5;--primary-50:#eef3fd;--primary-100:#dbe6fb;
+  --bg:#f4f6f9;--card:#fff;--text:#1f2937;--text-2:#4b5563;--muted:#6b7280;--faint:#9ca3af;
+  --border:#e5e7eb;--border-2:#eef0f3;--gray-bg:#f3f4f6;
+  --success:#15803d;--success-bg:#ecfdf3;--success-bd:#bbf7d0;
+  --warn:#b45309;--warn-bg:#fff7ed;--warn-bd:#fed7aa;
+  --danger:#b91c1c;--danger-bg:#fef2f2;--danger-bd:#fecaca;
+  --radius:10px;--shadow:0 1px 2px rgba(16,24,40,.05);--shadow-lg:0 16px 40px rgba(16,24,40,.16);
+  --sidebar:236px;--topbar:60px;--slot:44px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.45;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--primary);text-decoration:none}
+svg{flex-shrink:0}
+h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.01em}
+.muted{color:var(--muted)} .small{font-size:12.5px} .nowrap{white-space:nowrap} .right{text-align:right} .strong{font-weight:600}
+.hide{display:none!important}
+
+/* ---------- Shell ---------- */
+.app{display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr);grid-template-rows:var(--topbar) 1fr;min-height:100vh}
+.topbar{grid-column:1/-1;position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;padding:0 20px;background:#fff;border-bottom:1px solid var(--border);height:var(--topbar)}
+.brand{display:flex;align-items:center;gap:10px;width:calc(var(--sidebar) - 20px);min-width:0;cursor:pointer}
+.brand-mark{width:34px;height:34px;border-radius:9px;background:var(--primary);color:#fff;display:grid;place-items:center}
+.brand-name{font-weight:700;font-size:15px;line-height:1.1}
+.brand-sub{font-size:11.5px;color:var(--muted)}
+.demo-tag{font-size:10.5px;font-weight:600;color:var(--primary);background:var(--primary-50);border:1px solid var(--primary-100);padding:1px 6px;border-radius:20px;margin-left:4px;vertical-align:middle}
+.tb-search{position:relative;flex:1;max-width:460px}
+.tb-search input{width:100%;height:38px;border:1px solid var(--border);border-radius:9px;background:var(--gray-bg);padding:0 12px 0 36px;outline:none}
+.tb-search input:focus{background:#fff;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-100)}
+.tb-search .ic{position:absolute;left:11px;top:10px;color:var(--muted)}
+.tb-spacer{flex:1}
+.branch-pill{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--text-2);font-weight:500;white-space:nowrap}
+select.branch-pill{appearance:none;-webkit-appearance:none;padding-right:30px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;cursor:pointer;color:var(--text)}
+.user-btn{display:flex;align-items:center;gap:10px;height:44px;padding:4px 10px 4px 4px;border:1px solid var(--border);border-radius:11px;background:#fff;text-align:left}
+.user-btn:hover{background:var(--gray-bg)}
+.user-btn .nm{font-weight:600;font-size:13.5px;line-height:1.15}
+.user-btn .rl{font-size:11.5px;color:var(--muted)}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--primary-50);color:var(--primary);display:grid;place-items:center;font-weight:600;font-size:13px;flex-shrink:0}
+.avatar.lg{width:56px;height:56px;font-size:19px}
+.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--border);background:#fff;display:grid;place-items:center;color:var(--text-2)}
+.mobile-only{display:none!important}
+
+.sidebar{position:sticky;top:var(--topbar);height:calc(100vh - var(--topbar));background:#fff;border-right:1px solid var(--border);padding:16px 12px;overflow:auto;display:flex;flex-direction:column}
+.nav-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding:6px 12px 8px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:var(--text-2);font-weight:500;border:0;background:none;width:100%;text-align:left;margin-bottom:2px}
+.nav-item:hover{background:var(--gray-bg);color:var(--text)}
+.nav-item.active{background:var(--primary-50);color:var(--primary)}
+.nav-item .cnt{margin-left:auto;font-size:11.5px;font-weight:600;background:var(--danger-bg);color:var(--danger);border-radius:20px;padding:1px 7px}
+.side-foot{margin-top:auto;padding:12px;border-top:1px solid var(--border-2);font-size:12px;color:var(--muted)}
+.side-foot b{color:var(--text-2);font-weight:600}
+.main{padding:24px 28px 48px;min-width:0}
+.view{max-width:1360px;margin:0 auto}
+
+/* ---------- Page header ---------- */
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.page-head h1{font-size:22px}
+.page-head .sub{color:var(--muted);margin-top:4px}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-weight:500;margin-bottom:14px;border:0;background:none;padding:0}
+.back:hover{color:var(--primary)}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;padding:0 14px;border-radius:9px;border:1px solid var(--border);background:#fff;color:var(--text);font-weight:500;white-space:nowrap}
+.btn:hover{background:var(--gray-bg)}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-600)}
+.btn-soft{background:var(--primary-50);border-color:var(--primary-100);color:var(--primary)}
+.btn-soft:hover{background:var(--primary-100)}
+.btn-danger{color:var(--danger);border-color:var(--danger-bd)}
+.btn-danger:hover{background:var(--danger-bg)}
+.btn-ghost{border-color:transparent;background:transparent;color:var(--text-2)}
+.btn-sm{height:32px;padding:0 10px;font-size:13px;border-radius:8px}
+.btn-block{width:100%}
+.link-btn{border:0;background:none;color:var(--primary);font-weight:500;padding:0}
+
+/* ---------- Cards ---------- */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border-2)}
+.card-head h3{font-size:15px;display:flex;align-items:center;gap:8px}
+.card-head h3 .ic{color:var(--muted)}
+.card-body{padding:16px 18px}
+.card-body.flush{padding:0}
+.grid{display:grid;gap:16px}
+.g-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g-main{grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;align-items:center;gap:8px}
+.wrap{flex-wrap:wrap}
+
+/* ---------- Badges / chips ---------- */
+.badge{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap;border:1px solid transparent}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.85}
+.badge.nodot::before{display:none}
+.b-blue{background:var(--primary-50);color:var(--primary);border-color:var(--primary-100)}
+.b-green{background:var(--success-bg);color:var(--success);border-color:var(--success-bd)}
+.b-amber{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-bd)}
+.b-red{background:var(--danger-bg);color:var(--danger);border-color:var(--danger-bd)}
+.b-gray{background:var(--gray-bg);color:var(--text-2);border-color:var(--border)}
+.tag{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:var(--gray-bg);color:var(--text-2);white-space:nowrap}
+.tag.baku{background:#eef3fd;color:#1d4fb8}
+.tag.nax{background:#e7f7f0;color:#0f6b4b}
+.seg{display:inline-flex;background:var(--gray-bg);border:1px solid var(--border);border-radius:9px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;height:30px;padding:0 12px;border-radius:7px;color:var(--text-2);font-weight:500;font-size:13px;white-space:nowrap}
+.seg button.on{background:#fff;color:var(--primary);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{height:32px;padding:0 12px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--text-2);font-weight:500;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.chip.on{background:var(--primary-50);border-color:var(--primary);color:var(--primary)}
+.chip .n{font-size:11.5px;background:var(--gray-bg);border-radius:20px;padding:0 6px;color:var(--text-2)}
+.chip.on .n{background:#fff}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;text-align:left;box-shadow:var(--shadow);position:relative;display:block;width:100%}
+.kpi:hover{border-color:var(--primary-100)}
+.kpi .l{color:var(--muted);font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:6px}
+.kpi .v{font-size:24px;font-weight:700;margin-top:6px;letter-spacing:-.02em}
+.kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
+.kpi.warn{border-color:var(--warn-bd);background:var(--warn-bg)} .kpi.warn .v,.kpi.warn .l{color:var(--warn)}
+.kpi.danger{border-color:var(--danger-bd);background:var(--danger-bg)} .kpi.danger .v,.kpi.danger .l{color:var(--danger)}
+
+/* ---------- Filter bar ---------- */
+.filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.filterbar .lbl{font-size:12.5px;color:var(--muted);font-weight:500}
+.input,.select,textarea.input{height:38px;border:1px solid var(--border);border-radius:9px;background:#fff;padding:0 11px;outline:none;width:100%}
+textarea.input{height:auto;min-height:84px;padding:9px 11px;resize:vertical}
+.input:focus,.select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-100)}
+.input[readonly]{background:var(--gray-bg);color:var(--text-2)}
+.select{appearance:none;-webkit-appearance:none;padding-right:30px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center}
+.search-lg{position:relative;margin-bottom:14px}
+.search-lg input{height:46px;font-size:15px;padding-left:42px;border-radius:11px}
+.search-lg .ic{position:absolute;left:14px;top:14px;color:var(--muted)}
+.w-auto{width:auto}
+
+/* ---------- Tables / mobile cards ---------- */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:12px;font-weight:600;color:var(--muted);text-align:left;padding:10px 16px;background:#fafbfc;border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:12px 16px;border-bottom:1px solid var(--border-2);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr[data-act]{cursor:pointer}
+.tbl tbody tr[data-act]:hover td{background:#f8fafd}
+.tbl .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.mcards{display:none}
+.pcell{display:flex;align-items:center;gap:10px}
+.pcell .nm{font-weight:600}
+.pcell .avatar{width:32px;height:32px;font-size:12px}
+.debt{color:var(--warn);font-weight:600}
+.zero{color:var(--muted)}
+
+/* ---------- Lists ---------- */
+.li{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border-2);cursor:pointer}
+.li:last-child{border-bottom:0}
+.li:hover{background:#f8fafd}
+.li .main-t{font-weight:600}
+.li .sub-t{font-size:12.5px;color:var(--muted)}
+.li .grow{flex:1;min-width:0}
+.time-box{width:54px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums;color:var(--text)}
+.time-box small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+.empty{padding:28px 18px;text-align:center;color:var(--muted)}
+.empty .ic-wrap{width:44px;height:44px;border-radius:50%;background:var(--gray-bg);display:grid;place-items:center;margin:0 auto 10px;color:var(--faint)}
+.empty h4{color:var(--text);font-size:15px;margin-bottom:4px}
+.empty .btn{margin-top:12px}
+
+/* ---------- Banners ---------- */
+.banner{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-radius:9px;border:1px solid var(--primary-100);background:var(--primary-50);color:#1e3a8a;font-size:13px;margin-bottom:14px}
+.banner .ic{margin-top:1px}
+.banner.warn{background:var(--warn-bg);border-color:var(--warn-bd);color:#7c2d12}
+.banner.danger{background:var(--danger-bg);border-color:var(--danger-bd);color:#7f1d1d}
+.banner.green{background:var(--success-bg);border-color:var(--success-bd);color:#14532d}
+.banner b{font-weight:600}
+
+/* ---------- Patient profile ---------- */
+.p-head{display:flex;gap:18px;align-items:flex-start;padding:20px}
+.p-head .info{flex:1;min-width:0}
+.p-head h1{font-size:22px}
+.p-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 20px;margin-top:14px}
+.p-meta .k{font-size:12px;color:var(--muted)}
+.p-meta .v{font-weight:500;margin-top:1px;word-break:break-word}
+.p-actions{display:flex;gap:8px;flex-wrap:wrap;padding:14px 20px;border-top:1px solid var(--border-2);background:#fafbfc;border-radius:0 0 var(--radius) var(--radius)}
+.fin-strip{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:var(--radius);background:#fff;overflow:hidden;box-shadow:var(--shadow)}
+.fin-strip>div{padding:14px 18px;border-right:1px solid var(--border-2)}
+.fin-strip>div:last-child{border-right:0}
+.fin-strip .k{font-size:12.5px;color:var(--muted);font-weight:500}
+.fin-strip .v{font-size:20px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+.fin-strip .rem{background:var(--warn-bg)} .fin-strip .rem .v,.fin-strip .rem .k{color:var(--warn)}
+.fin-strip .rem.ok{background:var(--success-bg)} .fin-strip .rem.ok .v,.fin-strip .rem.ok .k{color:var(--success)}
+.scope-note{font-size:12px;color:var(--muted);margin-top:6px;display:flex;gap:6px;align-items:center}
+.tl{position:relative;padding:4px 0}
+.tl-item{position:relative;padding:14px 18px 14px 46px;border-bottom:1px solid var(--border-2);cursor:pointer}
+.tl-item:last-child{border-bottom:0}
+.tl-item:hover{background:#f8fafd}
+.tl-item::before{content:"";position:absolute;left:25px;top:0;bottom:0;width:2px;background:var(--border-2)}
+.tl-item .dot{position:absolute;left:19px;top:18px;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--primary)}
+.tl-item.nax .dot{border-color:#1baf7a}
+.tl-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tl-date{font-weight:600}
+.tl-title{font-size:15px;font-weight:600;margin-top:4px}
+.tl-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
+.tl-price{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12.5px;color:var(--text-2)}
+.tl-price b{font-weight:600;color:var(--text)}
+.tl-note{margin-top:7px;font-size:13px;color:var(--text-2);background:var(--gray-bg);border-radius:7px;padding:7px 10px}
+.flash{animation:flash 2.2s ease}
+@keyframes flash{0%,40%{background:#fff7d6}100%{background:transparent}}
+.docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+.doc{border:1px solid var(--border);border-radius:9px;padding:8px;text-align:center;font-size:11.5px;color:var(--text-2);background:#fff;overflow:hidden}
+.doc .th{height:58px;border-radius:6px;background:var(--gray-bg);display:grid;place-items:center;color:var(--faint);margin-bottom:6px;overflow:hidden}
+.doc .th img{width:100%;height:100%;object-fit:cover}
+.doc .dn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc .dk{color:var(--faint);font-size:10.5px}
+.doc-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-2);background:#fff;border:1px solid var(--border);border-radius:6px;padding:2px 7px;margin:6px 6px 0 0}
+.upload{border:1.5px dashed var(--border);border-radius:9px;padding:12px;text-align:center;color:var(--muted);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;background:#fafbfc}
+.upload:hover{border-color:var(--primary);color:var(--primary)}
+.progress{height:8px;background:var(--gray-bg);border-radius:20px;overflow:hidden}
+.progress>i{display:block;height:100%;background:var(--success);border-radius:20px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:13.5px}
+.kv .k{color:var(--muted)}
+.kv .v{font-weight:500;text-align:right}
+.calc{border:1px solid var(--border);border-radius:9px;background:#fafbfc;padding:12px 14px}
+.calc .ln{display:flex;justify-content:space-between;padding:4px 0;font-variant-numeric:tabular-nums}
+.calc .ln.tot{border-top:1px solid var(--border);margin-top:4px;padding-top:8px;font-weight:700}
+.calc .ln.rem{color:var(--warn);font-weight:700}
+.calc .ln.rem.ok{color:var(--success)}
+.calc .arrow{text-align:center;color:var(--faint);font-size:11px;line-height:1}
+
+/* ---------- Calendar ---------- */
+.cal-wrap{overflow:auto;max-height:calc(100vh - 250px);min-height:420px}
+.cal{display:grid;position:relative;min-width:560px}
+.cal-h{position:sticky;top:0;z-index:3;background:#fafbfc;border-bottom:1px solid var(--border);padding:10px 12px;font-weight:600;font-size:13px;border-left:1px solid var(--border-2)}
+.cal-h small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+.cal-times{border-right:1px solid var(--border-2)}
+.cal-t:first-child{transform:none!important}
+.cal-t{height:var(--slot);font-size:11.5px;color:var(--muted);text-align:right;padding:0 8px;transform:translateY(-7px);font-variant-numeric:tabular-nums}
+.cal-col{position:relative;border-left:1px solid var(--border-2)}
+.cal-slot{height:var(--slot);border-bottom:1px solid var(--border-2)}
+.cal-slot:nth-child(2n){border-bottom-color:var(--border)}
+.cal-slot.can:hover{background:var(--primary-50);cursor:pointer}
+.ev{position:absolute;left:4px;right:4px;border-radius:7px;padding:5px 8px;font-size:12px;overflow:hidden;cursor:pointer;border-left:3px solid var(--primary);background:#eaf1fe;color:#1e3a8a;line-height:1.3}
+.ev:hover{box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:2}
+.ev .t{font-weight:600}
+.ev.completed{background:var(--success-bg);border-left-color:var(--success);color:#14532d}
+.ev.cancelled{background:var(--gray-bg);border-left-color:var(--faint);color:var(--muted);text-decoration:line-through}
+.ev.noshow{background:var(--danger-bg);border-left-color:var(--danger);color:#7f1d1d}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.date-nav{display:flex;align-items:center;gap:6px}
+.date-nav .dl{font-weight:600;min-width:0}
+
+/* ---------- Modal / sheet ---------- */
+.overlay{position:fixed;inset:0;background:rgba(17,24,39,.42);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:48px 16px;overflow:auto;animation:fade .15s ease}
+@keyframes fade{from{opacity:0}}
+.modal{background:#fff;border-radius:14px;box-shadow:var(--shadow-lg);width:100%;max-width:620px;display:flex;flex-direction:column;animation:pop .18s ease}
+.modal.sm{max-width:460px}
+.modal.lg{max-width:760px}
+@keyframes pop{from{transform:translateY(10px);opacity:.6}}
+.m-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px 14px;border-bottom:1px solid var(--border-2)}
+.m-head h2{font-size:17px}
+.m-head .sub{color:var(--muted);font-size:13px;margin-top:2px}
+.m-body{padding:18px 20px}
+.m-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border-2);background:#fafbfc;border-radius:0 0 14px 14px;flex-wrap:wrap}
+.m-foot .left{margin-right:auto}
+.sheet-grip{display:none}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld.full{grid-column:1/-1}
+.fld label{font-size:12.5px;font-weight:600;color:var(--text-2)}
+.fld label .req{color:var(--danger)}
+.fld .hint{font-size:12px;color:var(--muted)}
+.fld .err{font-size:12px;color:var(--danger);display:none}
+.fld.invalid .input,.fld.invalid .select{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-bg)}
+.fld.invalid .err{display:block}
+.radio-chips{display:flex;gap:8px;flex-wrap:wrap}
+.radio-chips label{display:flex;align-items:center;gap:7px;height:38px;padding:0 13px;border:1px solid var(--border);border-radius:9px;cursor:pointer;font-weight:500;font-size:13.5px;color:var(--text-2);background:#fff}
+.radio-chips input{accent-color:var(--primary);margin:0}
+.radio-chips label:has(input:checked){border-color:var(--primary);background:var(--primary-50);color:var(--primary)}
+.form-err{display:none}
+.form-err.show{display:flex}
+.section-t{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:4px 0 -4px;grid-column:1/-1}
+.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px}
+.detail-grid .k{font-size:12px;color:var(--muted)}
+.detail-grid .v{font-weight:500;margin-top:1px}
+.log{border-left:2px solid var(--border);padding-left:14px;margin-left:4px}
+.log-e{position:relative;padding-bottom:12px}
+.log-e::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--primary)}
+.log-e .m{font-size:12px;color:var(--muted)}
+
+/* ---------- Dropdown ---------- */
+.dropdown{position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);z-index:60;min-width:300px;overflow:hidden}
+.dd-head{padding:12px 14px;border-bottom:1px solid var(--border-2);font-size:12px;color:var(--muted)}
+.dd-head b{color:var(--text);display:block;font-size:13px;margin-bottom:1px}
+.dd-item{display:flex;align-items:center;gap:11px;padding:10px 14px;border:0;background:none;width:100%;text-align:left}
+.dd-item:hover{background:var(--gray-bg)}
+.dd-item.on{background:var(--primary-50)}
+.dd-item .t{font-weight:600;font-size:13.5px}
+.dd-item .s{font-size:12px;color:var(--muted)}
+.dd-item .grow{flex:1;min-width:0}
+.dd-item .chk{color:var(--primary)}
+.dd-foot{border-top:1px solid var(--border-2)}
+.sr{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);z-index:60;overflow:hidden;max-height:420px;overflow-y:auto}
+.sr .li{padding:10px 14px}
+.sr-empty{padding:16px;text-align:center;color:var(--muted)}
+.sr-empty .btn{margin-top:10px}
+
+/* ---------- Toast ---------- */
+#toast-root{position:fixed;right:20px;bottom:20px;z-index:200;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.toast{display:flex;align-items:center;gap:10px;background:#111827;color:#fff;padding:11px 14px;border-radius:10px;box-shadow:var(--shadow-lg);font-size:13.5px;max-width:420px;animation:pop .2s ease}
+.toast.err{background:#7f1d1d}
+.toast .ic{color:#86efac}
+.toast.err .ic{color:#fecaca}
+.toast button{border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:7px;height:28px;padding:0 10px;font-weight:600;font-size:12.5px;white-space:nowrap}
+
+/* ---------- Bottom nav / FAB ---------- */
+.bottomnav{display:none}
+.fab{display:none}
+
+
+/* ---------- Infographic dashboard ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.stat{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:left;box-shadow:var(--shadow);width:100%}
+.stat:hover{border-color:var(--primary-100)}
+.stat .si{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:var(--primary-50);color:var(--primary);flex-shrink:0}
+.stat .sv{display:block;white-space:nowrap;font-size:21px;font-weight:700;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums}
+.stat .sl{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.stat.ok .si{background:var(--success-bg);color:var(--success)}
+.stat.warn{background:var(--warn-bg);border-color:var(--warn-bd)} .stat.warn .si{background:#ffedd5;color:var(--warn)} .stat.warn .sv{color:var(--warn)}
+.stat.danger{background:var(--danger-bg);border-color:var(--danger-bd)} .stat.danger .si{background:#fee2e2;color:var(--danger)} .stat.danger .sv{color:var(--danger)}
+.viz-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+.viz.wide{grid-column:span 3}
+.viz-grid .viz:has(.cmp){grid-column:span 2}
+.donut-row{display:flex;align-items:center;gap:18px}
+.donut{width:132px;height:132px;flex-shrink:0}
+.dn-v{font-size:24px;font-weight:700;fill:var(--text)}
+.dn-l{font-size:11px;fill:var(--muted)}
+.legend-col{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.lgd{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)}
+.lgd i,.legend-row i,.fu-n i{width:10px;height:10px;border-radius:3px;flex-shrink:0;display:inline-block}
+.lgd span{flex:1;min-width:0}
+.lgd b{font-weight:600;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lgd em{font-style:normal;color:var(--muted);font-size:12px;width:34px;text-align:right}
+.big-n{font-size:22px;font-weight:700;margin:-4px 0 10px;font-variant-numeric:tabular-nums}
+.cols{display:flex;align-items:flex-end;gap:8px;height:150px}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;cursor:default}
+.col .cb{width:100%;max-width:30px;background:var(--primary);border-radius:4px 4px 0 0;min-height:0}
+.col:hover .cb{background:var(--primary-600)}
+.col .cv{font-size:11px;font-weight:600;color:var(--text-2);margin-bottom:4px;min-height:14px}
+.col .cl{font-size:10.5px;color:var(--muted);text-align:center;margin-top:6px;line-height:1.2;border-top:1px solid var(--border);width:100%;padding-top:5px}
+.col .cl.on{color:var(--primary);font-weight:600}
+.sbar{display:flex;gap:2px;height:16px;border-radius:5px;overflow:hidden;background:var(--gray-bg)}
+.sbar span{min-width:4px}
+.fu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}
+.fu-n{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;border:1px solid var(--border-2);background:#fafbfc;border-radius:10px;padding:9px 11px;text-align:left}
+.fu-n:hover{border-color:var(--primary-100)}
+.fu-n b{font-size:20px;font-weight:700;line-height:1.1}
+.fu-n span{grid-column:2;font-size:12px;color:var(--muted)}
+.fu-n.hot{background:var(--danger-bg);border-color:var(--danger-bd)} .fu-n.hot b{color:var(--danger)}
+.legend-row{display:flex;gap:16px;font-size:12.5px;color:var(--text-2);margin-bottom:12px}
+.legend-row span{display:flex;align-items:center;gap:6px}
+.cmp{display:grid;grid-template-columns:110px 1fr;row-gap:4px;column-gap:12px;padding:8px 0;border-bottom:1px solid var(--border-2)}
+.cmp:last-child{border-bottom:0}
+.cmp-l{grid-row:span 2;font-size:13px;font-weight:500;color:var(--text-2);align-self:center}
+.cmp-r{display:flex;align-items:center;gap:8px;height:18px;cursor:pointer}
+.cmp-b{height:12px;border-radius:0 4px 4px 0;display:block}
+.cmp-v{font-size:12px;font-weight:600;color:var(--text-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.next{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.nx{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1px solid var(--border);border-left:3px solid var(--primary);border-radius:9px;padding:10px 12px;background:#fff;text-align:left}
+.nx:hover{background:#f8fafd}
+.nx-t{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.nx-d{font-size:11.5px;color:var(--primary);font-weight:600}
+.nx-p{font-weight:600;margin-top:4px}
+.nx-s{font-size:12px;color:var(--muted)}
+.tip{position:fixed;z-index:300;display:none;pointer-events:none;background:#111827;color:#fff;font-size:12.5px;padding:6px 9px;border-radius:7px;box-shadow:var(--shadow-lg);white-space:nowrap}
+@media (max-width:1180px){.viz-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.viz.wide,.viz-grid .viz:has(.cmp){grid-column:span 2}}
+@media (max-width:767px){.viz-grid{grid-template-columns:1fr}.viz.wide,.viz-grid .viz:has(.cmp){grid-column:auto}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stat{flex-direction:column;align-items:flex-start;gap:8px;padding:12px}.stat .si{width:38px;height:38px}.stat .sv{font-size:19px}.donut{width:116px;height:116px}.cmp{grid-template-columns:84px 1fr}.next{grid-template-columns:1fr 1fr}.tip{display:none!important}}
+
+
+/* ---------- Visual profile & lists ---------- */
+.pchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.pc{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:9px;background:var(--gray-bg);color:var(--text);font-size:13px;max-width:100%}
+.pc .ic{color:var(--primary)}
+.pc span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finbar{padding:14px 18px;margin-bottom:16px}
+.fb-nums{display:flex;gap:28px;align-items:flex-end;margin-bottom:10px;flex-wrap:wrap}
+.fb-nums>div{display:flex;flex-direction:column}
+.fb-k{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.fb-k i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.fb-nums b{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.fb-scope{margin-left:auto;color:var(--faint)}
+.sbar.fb{height:12px}
+.tr-row{display:flex;gap:14px;align-items:flex-start;padding:14px 18px;border-bottom:1px solid var(--border-2);cursor:pointer}
+.tr-row:last-child{border-bottom:0}
+.tr-row:hover{background:#f8fafd}
+.tr-row .grow{flex:1;min-width:0}
+.dbox{width:52px;flex-shrink:0;text-align:center;border-radius:10px;background:var(--primary-50);color:var(--primary);padding:6px 0 5px;line-height:1.05}
+.dbox.nax{background:#e7f7f0;color:#0f6b4b}
+.dbox b{display:block;font-size:19px;font-weight:700}
+.dbox span{display:block;font-size:11.5px;font-weight:600}
+.dbox small{display:block;font-size:10px;opacity:.75;margin-top:1px}
+.tr-t{font-weight:600;font-size:15px}
+.tr-m{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:4px;font-size:12.5px;color:var(--text-2)}
+.mini-av{width:22px;height:22px;border-radius:50%;background:var(--gray-bg);color:var(--text-2);display:inline-grid;place-items:center;font-size:10px;font-weight:700;flex-shrink:0}
+.tr-n{margin-top:6px;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:520px}
+.tr-money{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.tr-money b{font-size:15px}
+.tr-money s{font-size:11.5px;color:var(--faint)}
+.cnt-pill{font-size:11.5px;font-weight:600;background:var(--gray-bg);color:var(--text-2);border-radius:20px;padding:1px 8px}
+.m-ic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex-shrink:0;background:var(--gray-bg);color:var(--text-2)}
+.m-ic.cash{background:#fdeee7;color:#b4441b}.m-ic.c2c{background:#ecebf7;color:#4a3aa7}.m-ic.pos{background:#fdf3dc;color:#8a5d00}.m-ic.wa{background:#e7f7f0;color:#0f6b4b}
+.li.old{opacity:.65}
+.pill-note{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:#1e3a8a;background:var(--primary-50);border:1px solid var(--primary-100);border-radius:20px;padding:4px 11px}
+.pill-note.warn{color:#7c2d12;background:var(--warn-bg);border-color:var(--warn-bd)}
+.ap-sum{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.ap-s{background:#fff;border:1px solid var(--border);border-radius:11px;padding:10px 13px;display:grid;grid-template-columns:auto 1fr;column-gap:8px;align-items:center}
+.ap-s i{width:10px;height:10px;border-radius:3px}
+.ap-s b{font-size:20px;font-weight:700}
+.ap-s span{grid-column:1/-1;font-size:12px;color:var(--muted)}
+.ap-s.tot{background:var(--primary-50);border-color:var(--primary-100)} .ap-s.tot b{color:var(--primary);grid-column:1/-1}
+.fu-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.fu-tabs .fu-n{background:#fff;border:1px solid var(--border)}
+.fu-n.on{border-color:var(--primary)!important;box-shadow:0 0 0 3px var(--primary-100)}
+.clamp1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.debt-bar{min-width:140px}
+.debt-bar .sbar{height:10px}
+.pay-top{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);margin-bottom:16px;align-items:stretch}
+@media (max-width:1023px){.pay-top{grid-template-columns:1fr}}
+@media (max-width:767px){.ap-sum{grid-template-columns:repeat(3,minmax(0,1fr))}.ap-s.tot{grid-column:span 3}.fu-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.fu-tabs .fu-n:last-child{grid-column:span 2}.tr-row{padding:12px 14px;gap:11px}.dbox{width:46px}.tr-n{max-width:none;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.tr-money b{font-size:14px}.fb-nums{gap:16px}.fb-nums b{font-size:16px}.pc{font-size:13.5px}}
+
+
+.visit-sum{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border-2);border-radius:12px;background:#fafbfc;margin-bottom:14px}
+.visit-sum a{color:var(--text)}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.fact{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:11px;padding:10px 12px}
+.fact .ic{color:var(--primary)}
+.fact b{display:block;font-size:14px}
+.fact span{display:block;font-size:11.5px;color:var(--muted)}
+@media (max-width:767px){.facts{grid-template-columns:1fr 1fr}}
+/* ---------- Tablet (iPad) ---------- */
+@media (max-width:1180px){
+  :root{--sidebar:88px}
+  .brand{width:auto}
+  .brand-txt{display:none}
+  .sidebar{padding:12px 8px}
+  .nav-label,.side-foot{display:none}
+  .nav-item{flex-direction:column;gap:4px;font-size:11.5px;padding:10px 4px;text-align:center;position:relative}
+  .nav-item .cnt{position:absolute;top:4px;right:10px;margin:0;padding:0 5px;font-size:10.5px}
+  .main{padding:20px 20px 40px}
+  .p-meta{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:1023px){
+  .g-main{grid-template-columns:1fr}
+  .user-btn .txt{display:none}
+  .user-btn{padding:4px}
+}
+
+/* ---------- Phone ---------- */
+@media (max-width:767px){
+  :root{--topbar:56px}
+  body{font-size:15px;background:#f4f6f9}
+  .app{display:block}
+  .sidebar,.desktop-only{display:none!important}
+  .mobile-only{display:flex!important}
+  .topbar{padding:0 12px;padding-top:env(safe-area-inset-top);height:calc(var(--topbar) + env(safe-area-inset-top));gap:8px}
+  .brand-mark{width:32px;height:32px}
+  .tb-search{display:none}
+  .tb-spacer{flex:1}
+  .branch-pill{height:34px;padding:0 10px;font-size:13px}
+  select.branch-pill{padding-right:26px;background-position:right 8px center;max-width:132px}
+  .user-btn{border:0;height:40px;padding:0}
+  .main{padding:16px 14px calc(96px + env(safe-area-inset-bottom))}
+  .page-head{margin-bottom:14px}
+  .page-head h1{font-size:20px}
+  .page-head .page-actions{display:none}
+  .page-head .sub{font-size:13.5px}
+  .bottomnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(255,255,255,.98);border-top:1px solid var(--border);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;color:var(--muted);font-size:11px;font-weight:500;padding:4px 0;min-height:50px;justify-content:center;position:relative}
+  .bn.active{color:var(--primary)}
+  .bn .cnt{position:absolute;top:2px;left:calc(50% + 6px);background:var(--danger);color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:0 5px;line-height:16px}
+  .fab{display:flex;position:fixed;right:16px;bottom:calc(78px + env(safe-area-inset-bottom));z-index:45;height:52px;padding:0 18px 0 16px;border-radius:26px;background:var(--primary);color:#fff;border:0;align-items:center;gap:8px;font-weight:600;box-shadow:0 8px 20px rgba(29,91,216,.35)}
+  .btn{height:44px;font-size:15px}
+  .btn-sm{height:36px;font-size:13.5px}
+  .input,.select{height:46px;font-size:16px}
+  textarea.input{font-size:16px}
+  .tbl-wrap{display:none}
+  .mcards{display:flex;flex-direction:column}
+  .mcard{padding:13px 14px;border-bottom:1px solid var(--border-2);cursor:pointer}
+  .mcard:last-child{border-bottom:0}
+  .mcard:active{background:#f3f6fb}
+  .mc-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .mc-t{font-weight:600}
+  .mc-s{font-size:13px;color:var(--muted);margin-top:2px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .kpi{padding:12px 13px}
+  .kpi .v{font-size:21px}
+  .card-head{padding:13px 14px}
+  .card-body{padding:14px}
+  .li{padding:12px 14px}
+  .g-2{grid-template-columns:1fr}
+  .p-head{padding:16px;gap:12px}
+  .p-head h1{font-size:19px}
+  .avatar.lg{width:48px;height:48px;font-size:16px}
+  .p-meta{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}
+  .p-actions{display:grid;grid-template-columns:1fr 1fr;padding:12px 14px}
+  .p-actions .btn{width:100%}
+  .fin-strip>div{padding:11px 12px}
+  .fin-strip .v{font-size:16px}
+  .tl-item{padding:13px 14px 13px 40px}
+  .tl-item::before{left:20px}
+  .tl-item .dot{left:14px}
+  .filterbar{gap:8px}
+  .seg{width:100%}
+  .seg button{flex:1;height:34px}
+  .chips{flex-wrap:nowrap;overflow-x:auto;margin:0 -14px;padding:0 14px 2px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex-shrink:0;height:36px}
+  .overlay{align-items:flex-end;padding:0}
+  .modal,.modal.sm,.modal.lg{max-width:none;border-radius:18px 18px 0 0;max-height:92vh;animation:sheet .22s ease}
+  @keyframes sheet{from{transform:translateY(40%)}}
+  .sheet-grip{display:block;width:40px;height:5px;border-radius:5px;background:#d1d5db;margin:8px auto 0}
+  .m-head{padding:10px 16px 12px}
+  .m-body{padding:16px;overflow-y:auto}
+  .m-foot{position:sticky;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-radius:0}
+  .m-foot .btn{flex:1}
+  .m-foot .left{flex-basis:100%;margin:0}
+  .form{grid-template-columns:1fr}
+  .detail-grid{grid-template-columns:1fr 1fr}
+  .cal-view{display:none!important}
+  .dropdown{position:fixed;left:8px;right:8px;top:calc(var(--topbar) + env(safe-area-inset-top) + 4px);min-width:0}
+  #toast-root{left:12px;right:12px;bottom:calc(86px + env(safe-area-inset-bottom));align-items:stretch}
+  .toast{max-width:none}
+  .hide-m{display:none!important}
+}
+@media (min-width:768px){ .list-only-m{display:none!important} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar" id="topbar"></header>
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main"><div class="view" id="view"></div></main>
+</div>
+<nav class="bottomnav" id="bottomnav"></nav>
+<div id="fab-root"></div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+<input type="file" id="hidden-file" multiple accept="image/*,.pdf" class="hide">
+<script>
+/* ====================================================================
+   Dental Clinic MVP — interactive prototype (frontend only, mock data)
+   Source of truth: Dental Clinic MVP BRD
+   ==================================================================== */
+
+/* ---------- Date & format helpers ---------- */
+function isoDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function addDays(iso,n){const[y,m,d]=iso.split('-').map(Number);return isoDate(new Date(y,m-1,d+n))}
+const TODAY=isoDate(new Date());
+const D=n=>addDays(TODAY,n);
+const MONTHS=['yanvar','fevral','mart','aprel','may','iyun','iyul','avqust','sentyabr','oktyabr','noyabr','dekabr'];
+const WD_SHORT=['B.','B.e.','Ç.a.','Ç.','C.a.','C.','Ş.'];
+const WEEKDAYS=['bazar','bazar ertəsi','çərşənbə axşamı','çərşənbə','cümə axşamı','cümə','şənbə'];
+function fmtDate(iso){if(!iso)return '—';const[y,m,d]=iso.split('-');return d+'.'+m+'.'+y}
+function fmtLong(iso){const[y,m,d]=iso.split('-').map(Number);const w=WEEKDAYS[new Date(y,m-1,d).getDay()];return d+' '+MONTHS[m-1]+' '+y+', '+w}
+function fmtShort(iso){const[y,m,d]=iso.split('-').map(Number);return d+' '+MONTHS[m-1]}
+function relDay(iso){if(iso===TODAY)return 'Bu gün';if(iso===D(1))return 'Sabah';if(iso===D(-1))return 'Dünən';return fmtDate(iso)}
+function age(dob){const[y,m,d]=dob.split('-').map(Number);const t=new Date();let a=t.getFullYear()-y;if(t.getMonth()+1<m||(t.getMonth()+1===m&&t.getDate()<d))a--;return a}
+function money(n){n=Math.round((n||0)*100)/100;return n.toLocaleString('en-US',{maximumFractionDigits:2}).replace(/,/g,' ')+' AZN'}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function t2m(t){const[h,m]=t.split(':').map(Number);return h*60+m}
+function m2t(m){return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
+function uid(p){return p+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function initials(n){return n.replace(/^Dr\.\s*/,'').split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}
+function norm(s){return String(s||'').toLocaleLowerCase('az').replace(/ə/g,'e').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ç/g,'c').replace(/ğ/g,'g')}
+function digits(s){return String(s||'').replace(/\D/g,'')}
+
+/* ---------- Icons ---------- */
+const IC={
+ home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
+ users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+ calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+ tooth:'<path d="M7 3C4.5 3 3 5 3 7.5c0 3 1.5 4.5 2 7 .5 2.5 1 6.5 2.5 6.5S9.5 17 12 17s2.5 4 4.5 4 2-4 2.5-6.5c.5-2.5 2-4 2-7C21 5 19.5 3 17 3c-2 0-3 1-5 1S9 3 7 3z"/>',
+ clipboard:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h4"/>',
+ wallet:'<rect x="2" y="5" width="20" height="15" rx="2"/><path d="M2 10h20"/><path d="M16 15h2"/>',
+ chat:'<path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.2A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ down:'<path d="m6 9 6 6 6-6"/>',left:'<path d="m15 18-6-6 6-6"/>',right:'<path d="m9 18 6-6-6-6"/>',
+ x:'<path d="M18 6 6 18M6 6l12 12"/>',
+ file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
+ image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>',
+ upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>',
+ phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
+ check:'<path d="M20 6 9 17l-5-5"/>',
+ alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+ info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+ pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+ grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+ refresh:'<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>',
+ edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+ back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',
+ lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+ userplus:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>',
+ list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>',
+ up:'<path d="m18 15-6-6-6 6"/>',
+ cash:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
+ card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
+ idcard:'<rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><path d="M14 10h4M14 14h4"/>',
+ cake:'<path d="M4 21h16v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2z"/><path d="M4 16c2 1 4 1 6 0s4-1 6 0 2 1 4 0"/><path d="M12 11V7"/>',
+ heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6z"/>',
+ building:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01M8 14h.01M16 14h.01M12 14h.01"/>'
+};
+function ic(n,s=18,cls='ic'){return `<svg class="${cls}" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`}
+
+/* ---------- Static configuration (BRD §3, §4) ---------- */
+const BRANCHES={b1:'Bakı',b2:'Naxçıvan'};
+const USERS=[
+ {id:'u1',name:'Rəşad Quliyev',role:'owner',branches:['b1','b2']},
+ {id:'u2',name:'Nigar Abbasova',role:'coordinator',branches:['b1']},
+ {id:'u3',name:'Səbinə Rzayeva',role:'coordinator',branches:['b2']},
+ {id:'u4',name:'Dr. Elvin Əliyev',role:'dentist',branches:['b1','b2']},
+ {id:'u5',name:'Dr. Leyla Həsənova',role:'dentist',branches:['b1']},
+ {id:'u6',name:'Dr. Murad Kərimov',role:'dentist',branches:['b2']},
+ {id:'u7',name:'Günel Sultanova',role:'archivist',branches:['b1']}
+];
+const ROLE_LABEL={owner:'Klinika sahibi',coordinator:'Koordinator',dentist:'Həkim-stomatoloq',archivist:'Arxivçi'};
+const ROLE_DESC={owner:'Hər iki filial üzrə tam giriş',coordinator:'Yalnız təyin olunduğu filial',dentist:'Öz pasiyentləri, hər iki filialda işləyir',archivist:'Maliyyə məlumatlarına girişi yoxdur'};
+const DEMO_USER={owner:'u1',coordinator:'u2',dentist:'u4',archivist:'u7'};
+const ROOMS=[{id:'r1',branch:'b1',name:'Kabinet 1'},{id:'r2',branch:'b1',name:'Kabinet 2'},{id:'r3',branch:'b1',name:'Kabinet 3'},{id:'r4',branch:'b2',name:'Kabinet 1'},{id:'r5',branch:'b2',name:'Kabinet 2'}];
+const SERVICES=[['Konsultasiya',20],['Professional təmizləmə',80],['Plomb',150],['Kanal müalicəsi',300],['Diş çəkilməsi',60],['Tac (sirkon)',500],['İmplant',1200],['Ağartma',250]];
+const DURATIONS=[15,30,45,60,90,120];
+const APPT_STATUS={scheduled:{l:'Planlaşdırılıb',c:'b-blue'},completed:{l:'Tamamlandı',c:'b-green'},cancelled:{l:'Ləğv edildi',c:'b-gray'},noshow:{l:'Gəlmədi',c:'b-red'}};
+const FU_STATUS={pending:{l:'Gözləmədə',c:'b-amber'},contacted:{l:'Əlaqə saxlanıldı',c:'b-blue'},completed:{l:'Tamamlandı',c:'b-green'},overdue:{l:'Gecikmiş',c:'b-red'}};
+const PAY_METHODS={cash:'Nağd',c2c:'Kartdan karta (C2C)',pos:'POS'};
+const userById=id=>USERS.find(u=>u.id===id)||{name:'—',branches:[]};
+const roomById=id=>ROOMS.find(r=>r.id===id)||{name:'—'};
+const DENTISTS=USERS.filter(u=>u.role==='dentist');
+const COORDS=USERS.filter(u=>u.role==='coordinator');
+
+/* ---------- Mock data (fictional) ---------- */
+function seed(){
+ const P=(id,full_name,gender,dob,phone,pin,address,emergency,created,cb)=>({id,full_name,gender,dob,phone,pin,address,emergency,national_id_image:'sexsiyyet_vesiqesi_'+id+'.jpg',createdAt:created,createdBranch:cb});
+ const patients=[
+  P('p1','Ali Əliyev','Kişi','1985-04-12','+994 50 214 37 81','5KD7M2A','Bakı, Nəsimi r., Səməd Vurğun küç. 14','Səbinə Əliyeva (həyat yoldaşı) — +994 55 410 22 19',D(-120),'b1'),
+  P('p2','Leyla Məmmədova','Qadın','1992-09-03','+994 55 308 64 12','3RT9KQ1','Bakı, Yasamal r., Şərifzadə küç. 52','Fuad Məmmədov (qardaşı) — +994 50 771 34 08',D(-95),'b1'),
+  P('p3','Kamran Hüseynov','Kişi','1978-01-25','+994 70 455 19 03','6PL2WX8','Bakı, Xətai r., Babək pr. 31','Gülnar Hüseynova — +994 51 902 18 44',D(-200),'b1'),
+  P('p4','Aysel Həsənova','Qadın','1999-06-18','+994 51 627 80 45','2MZ4HB7','Bakı, Nərimanov r., Təbriz küç. 8','Rauf Həsənov (atası) — +994 50 330 61 27',D(-45),'b1'),
+  P('p5','Tural Qasımov','Kişi','1988-11-30','+994 50 902 41 66','7QA1CN5','Bakı, Binəqədi r., 9-cu mkr.','Nərgiz Qasımova — +994 55 214 90 03',D(-30),'b1'),
+  P('p6','Səadət Novruzova','Qadın','1965-02-07','+994 12 498 33 70','4HV8TR2','Bakı, Səbail r., Neftçilər pr. 77','Elnur Novruzov (oğlu) — +994 50 611 73 25',D(-160),'b1'),
+  P('p7','Orxan Babayev','Kişi','2001-08-22','+994 77 310 52 84','1BX6GD9','Bakı, Nizami r., Qara Qarayev pr. 40','Samirə Babayeva (anası) — +994 55 812 04 61',D(0),'b1'),
+  P('p8','Günay İsmayılova','Qadın','1990-12-14','+994 55 741 09 38','8NC3LP4','Sumqayıt, 5-ci mkr.','Tərlan İsmayılov — +994 50 245 87 10',D(-180),'b1'),
+  P('p9','Fərid Məmmədli','Kişi','1983-05-09','+994 50 136 28 47','9FD5RM6','Naxçıvan, Heydər Əliyev pr. 21','Lalə Məmmədli — +994 70 512 66 30',D(-70),'b2'),
+  P('p10','Nərmin Cəfərova','Qadın','1995-03-27','+994 70 248 91 52','2JW7YS3','Naxçıvan, Atatürk küç. 12','Vüqar Cəfərov — +994 50 993 15 78',D(-12),'b2'),
+  P('p11','Elşən Rəhimov','Kişi','1972-10-11','+994 51 804 47 29','5GK2PT8','Naxçıvan, Şərur r., Qaraqala k.','Aynur Rəhimova — +994 55 371 40 92',D(-55),'b2'),
+  P('p12','Zəhra Allahverdiyeva','Qadın','1987-07-04','+994 55 590 13 76','3SQ8VN1','Bakı, Suraxanı r., Hövsan qəs.','Ramil Allahverdiyev — +994 50 418 27 63',D(-2),'b1')
+ ];
+ /* One entity: a visit (qəbul). Booked → scheduled; after the work → completed with service, price, notes. */
+ const V=(id,patientId,branch,dentistId,roomId,off,start,duration,status,treatment,price,discount,notes)=>({id,patientId,branch,dentistId,roomId,date:D(off),start,duration,status,treatment,price:price??null,discount:discount||0,notes:notes||'',createdBy:dentistId});
+ const appointments=[
+  V('t1','p1','b1','u4','r1',-40,'10:00',45,'completed','Professional təmizləmə',80,0,'Diş daşları təmizləndi, cilalama aparıldı.'),
+  V('t2','p1','b2','u6','r4',-25,'14:00',45,'completed','Plomb',150,0,'Sol alt 6-cı diş, kompozit plomb qoyuldu.'),
+  V('t3','p1','b1','u4','r1',-6,'11:00',60,'completed','Kanal müalicəsi',300,0,'Sağ üst 5-ci diş. Birinci mərhələ tamamlandı, müvəqqəti plomb qoyuldu.'),
+  V('t4','p2','b1','u5','r2',-14,'12:00',90,'completed','İmplant',1200,100,'Sol alt 6-cı diş sahəsinə implant yerləşdirildi. Hissə-hissə ödəniş razılaşdırıldı.'),
+  V('t5','p3','b1','u4','r1',-60,'15:00',30,'completed','Diş çəkilməsi',60,0,'Ağıl dişi çəkildi, ağırlaşma yoxdur.'),
+  V('t6','p3','b1','u5','r2',-2,'10:30',45,'completed','Plomb',150,0,'Sağ alt 7-ci diş, kompozit plomb.'),
+  V('t7','p4','b1','u5','r2',-1,'16:00',60,'completed','Ağartma',250,25,'Ofis ağartması. Tələbə endirimi.'),
+  V('t8','p5','b1','u4','r1',0,'09:00',30,'completed','Plomb',150,0,'Sol üst 4-cü diş.'),
+  V('t9','p6','b1','u5','r2',-30,'11:00',60,'completed','Tac (sirkon)',500,0,'Sağ üst 6-cı diş üçün sirkon tac.'),
+  V('t10','p8','b1','u4','r1',-180,'10:00',45,'completed','Professional təmizləmə',80,0,'Profilaktik təmizləmə. 6 aydan sonra təkrar müayinə.'),
+  V('t11','p9','b2','u4','r4',-10,'10:00',90,'completed','Kanal müalicəsi',300,0,'Sol üst 6-cı diş, kanal müalicəsi tamamlandı.'),
+  V('t12','p9','b2','u6','r4',0,'10:00',45,'completed','Plomb',150,0,'Kanal müalicəsindən sonra daimi plomb.'),
+  V('t13','p10','b2','u6','r5',-1,'12:00',45,'completed','Professional təmizləmə',80,0,'Diş daşları təmizləndi.'),
+  V('t14','p11','b2','u6','r5',-20,'11:00',90,'completed','İmplant',1200,0,'Sağ alt 5-ci diş, implant. Ödəniş qrafiki razılaşdırıldı.'),
+  V('t15','p2','b1','u5','r2',0,'09:30',30,'completed','Konsultasiya',20,20,'İmplantdan sonra baxış. Ödənişsiz.'),
+  V('a2','p1','b1','u4','r1',0,'10:00',30,'scheduled','Kanal müalicəsi',null,0,'İkinci mərhələ'),
+  V('a3','p3','b1','u5','r2',0,'11:00',45,'scheduled','Konsultasiya',null,0,'Plombdan sonra yoxlama'),
+  V('a5','p7','b1','u5','r2',0,'14:00',30,'scheduled','Konsultasiya',null,0,'İlk müraciət'),
+  V('a6','p12','b1','u4','r1',0,'16:00',30,'scheduled','Konsultasiya'),
+  V('a7','p8','b1','u4','r3',0,'12:00',30,'noshow','Professional təmizləmə',null,0,'6 aylıq profilaktik müayinə'),
+  V('a9','p10','b2','u6','r4',0,'12:00',30,'scheduled','Konsultasiya'),
+  V('a10','p11','b2','u6','r5',0,'15:00',30,'cancelled','Konsultasiya',null,0,'Pasiyent başqa günə keçirdi'),
+  V('a11','p9','b2','u4','r4',1,'10:00',30,'scheduled','Konsultasiya'),
+  V('a12','p10','b2','u4','r5',1,'11:00',60,'scheduled','Plomb'),
+  V('a13','p1','b1','u4','r1',7,'10:00',60,'scheduled','Kanal müalicəsi',null,0,'Son mərhələ'),
+  V('a14','p6','b1','u5','r2',2,'11:30',30,'scheduled','Konsultasiya',null,0,'Tac yoxlaması'),
+  V('a15','p4','b1','u5','r2',6,'15:00',45,'scheduled','Ağartma',null,0,'2-ci seans')
+ ];
+ const Pay=(id,patientId,treatmentId,amount,method,off,branch,by,note)=>({id,patientId,treatmentId,amount,method,date:D(off),branch,recordedBy:by,note:note||''});
+ const payments=[
+  Pay('y1','p1','t1',80,'cash',-40,'b1','u2'),
+  Pay('y2','p1','t2',150,'pos',-25,'b2','u3'),
+  Pay('y3','p1','t3',100,'c2c',-6,'b1','u2','Qalıq növbəti qəbulda ödəniləcək.'),
+  Pay('y4','p2','t4',400,'cash',-14,'b1','u2','1-ci hissə'),
+  Pay('y5','p2','t4',300,'c2c',-3,'b1','u2','2-ci hissə'),
+  Pay('y6','p3','t5',60,'cash',-60,'b1','u2'),
+  Pay('y7','p3','t6',150,'pos',-2,'b1','u2'),
+  Pay('y8','p4','t7',225,'pos',-1,'b1','u2'),
+  Pay('y9','p5','t8',150,'cash',0,'b1','u2'),
+  Pay('y10','p6','t9',200,'cash',-30,'b1','u2','İlkin ödəniş'),
+  Pay('y11','p8','t10',80,'c2c',-180,'b1','u2'),
+  Pay('y12','p9','t11',300,'pos',-10,'b2','u3'),
+  Pay('y13','p9','t12',100,'cash',0,'b2','u3','Qalıq 50 AZN'),
+  Pay('y14','p10','t13',80,'c2c',-1,'b2','u3'),
+  Pay('y15','p11','t14',500,'cash',-20,'b2','u3','1-ci hissə')
+ ];
+ const F=(id,patientId,branch,coordinatorId,off,status,note,log)=>({id,patientId,branch,coordinatorId,due:D(off),channel:'WhatsApp',status,note,log:log||[]});
+ const followups=[
+  F('f1','p1','b1','u2',0,'pending','Kanal müalicəsindən sonra vəziyyətini soruşmaq və növbəti qəbulu xatırlatmaq.'),
+  F('f2','p2','b1','u2',-2,'contacted','İmplantdan sonra ikinci hissə ödənişi və təkrar baxış.',[{date:D(-2),by:'u2',status:'contacted',text:'Pasiyentlə WhatsApp vasitəsilə əlaqə saxlanıldı. Pasiyent gələn həftə üçün görüşü təsdiqlədi.'}]),
+  F('f3','p4','b1','u2',-1,'completed','Ağartmadan sonra həssaslıq olub-olmadığını soruşmaq.',[{date:D(-1),by:'u2',status:'completed',text:'Pasiyent həssaslıq olmadığını bildirdi. 2-ci seans üçün qəbul yaradıldı.'}]),
+  F('f4','p6','b1','u2',-3,'pending','Qalıq ödəniş (300 AZN) barədə xatırlatma.'),
+  F('f5','p8','b1','u2',-5,'pending','6 aylıq profilaktik müayinəyə dəvət etmək.'),
+  F('f6','p10','b2','u3',2,'pending','Təmizləmədən sonra vəziyyətini soruşmaq.'),
+  F('f7','p11','b2','u3',-2,'pending','İmplant üzrə növbəti ödəniş hissəsini xatırlatmaq.'),
+  F('f8','p3','b1','u2',3,'pending','Plombdan sonra şikayət olub-olmadığını soruşmaq.'),
+  F('f9','p9','b2','u3',0,'pending','Daimi plombdan sonra vəziyyət və qalıq 50 AZN.')
+ ];
+ const L=(id,patientId,treatment,status,treatmentId)=>({id,patientId,treatment,status,treatmentId:treatmentId||null});
+ const Doc=(id,patientId,treatmentId,name,kind,off,by)=>({id,patientId,treatmentId,name,kind,date:D(off),by,thumb:null});
+ const docs=[
+  Doc('d1','p1','t3','foto_mualice_oncesi.jpg','photo',-6,'u4'),
+  Doc('d2','p1','t3','foto_mualice_sonrasi.jpg','photo',-6,'u4'),
+  Doc('d3','p2','t4','hisse_hisse_odenis_muqavilesi.pdf','contract',-14,'u2'),
+  Doc('d4','p2','t4','implant_pasportu.pdf','document',-14,'u5'),
+  Doc('d5','p11','t14','odenis_qrafiki_muqavilesi.pdf','contract',-20,'u3'),
+  Doc('d6','p6',null,'kohne_kart_skan.pdf','document',-160,'u7'),
+  Doc('d7','p1',null,'kohne_arxiv_karti.jpg','photo',-118,'u7')
+ ];
+ return {v:4,day:TODAY,patients,payments,appointments,followups,docs};
+}
+
+/* ---------- Store ---------- */
+const KEY='dentalMvpDemo_v1';
+let DB;
+function load(){try{const s=localStorage.getItem(KEY);if(s){const o=JSON.parse(s);if(o&&o.v===4&&o.day===TODAY){DB=o;return}}}catch(e){}DB=seed()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){try{DB.docs.forEach(d=>d.thumb=null);localStorage.setItem(KEY,JSON.stringify(DB))}catch(_){}}}
+function saveUI(){try{localStorage.setItem(KEY+'_ui',JSON.stringify({role:UI.role,branch:UI.branch}))}catch(e){}}
+const UI={role:'owner',branch:'all',period:'today',pDate:TODAY,apptDate:TODAY,apptView:'calendar',ptQuery:'',ptMine:false,trTab:'records',trQuery:'',trDentist:'all',payTab:'history',fuTab:'open',histBranch:'all',histSort:'desc'};
+try{const u=JSON.parse(localStorage.getItem(KEY+'_ui')||'null');if(u&&DEMO_USER[u.role]){UI.role=u.role;UI.branch=u.branch||'all'}}catch(e){}
+load();
+
+/* ---------- Permissions (BRD §13) ---------- */
+const PERM={
+ owner:      {nav:['dashboard','patients','appointments','payments','followups'],finance:'all',  addPay:true, manageAppt:true, followups:true, dashboard:'all'},
+ coordinator:{nav:['dashboard','patients','appointments','payments','followups'],finance:'branch',addPay:true, manageAppt:true, followups:true, dashboard:'branch'},
+ dentist:    {nav:['dashboard','patients','appointments','payments'],            finance:'own',  addPay:true, manageAppt:true, followups:false,dashboard:'own'},
+ archivist:  {nav:['patients','appointments'],                                   finance:false,  addPay:false,manageAppt:false,followups:false,dashboard:false}
+};
+const NAV={dashboard:{l:'İdarə paneli',s:'Panel',i:'home'},patients:{l:'Pasiyentlər',s:'Pasiyentlər',i:'users'},appointments:{l:'Qəbullar',s:'Qəbullar',i:'calendar'},treatments:{l:'Müalicələr',s:'Müalicələr',i:'clipboard'},payments:{l:'Ödənişlər',s:'Ödənişlər',i:'wallet'},followups:{l:'Təqiblər',s:'Təqiblər',i:'chat'}};
+const me=()=>userById(DEMO_USER[UI.role]);
+const perm=()=>PERM[UI.role];
+const isRole=r=>UI.role===r;
+/* Branch the current user works in for lists: owner = selected filter; coordinator/archivist = assigned branch; dentist = all (own records) */
+function scopeBranch(){if(isRole('owner'))return UI.branch;if(isRole('dentist'))return 'all';return me().branches[0]}
+const inBranch=b=>{const s=scopeBranch();return s==='all'||b===s};
+/* Lists (calendar, treatments, payments) */
+const apptVisible=a=>isRole('dentist')?a.dentistId===me().id:inBranch(a.branch);
+const trVisible=t=>apptVisible(t);
+/* Financial visibility for one treatment (profile / detail) */
+function finVisible(t){const f=perm().finance;if(!f)return false;if(f==='all')return true;if(f==='branch')return t.branch===me().branches[0];return t.dentistId===me().id}
+function payListVisible(p){const f=perm().finance;if(!f)return false;if(f==='own'){const t=trById(p.treatmentId);return t&&t.dentistId===me().id}return inBranch(p.branch)}
+const fuVisible=f=>perm().followups&&inBranch(f.branch);
+function finScopeNote(){const f=perm().finance;if(f==='branch')return 'Yalnız '+BRANCHES[me().branches[0]]+' filialı üzrə müalicələr göstərilir';if(f==='own')return 'Yalnız sizin apardığınız müalicələr üzrə';return 'Hər iki filial üzrə'}
+function myPatientIds(){const id=me().id;const s=new Set();TRS().forEach(t=>t.dentistId===id&&s.add(t.patientId));DB.appointments.forEach(a=>a.dentistId===id&&s.add(a.patientId));return s}
+
+/* ---------- Domain helpers ---------- */
+const ptById=id=>DB.patients.find(p=>p.id===id);
+const TRS=()=>DB.appointments.filter(a=>a.status==='completed');
+const trById=id=>DB.appointments.find(t=>t.id===id);
+const apById=id=>DB.appointments.find(a=>a.id===id);
+const fuById=id=>DB.followups.find(f=>f.id===id);
+const trFinal=t=>(t.status!=='completed'||t.price==null)?0:Math.max(0,(+t.price||0)-(+t.discount||0));
+const trPaid=t=>DB.payments.filter(p=>p.treatmentId===t.id).reduce((s,p)=>s+(+p.amount),0);
+const trRemain=t=>Math.max(0,trFinal(t)-trPaid(t));
+function ptFin(pid,filter){const ts=TRS().filter(t=>t.patientId===pid&&(filter?filter(t):true));const total=ts.reduce((s,t)=>s+trFinal(t),0);const paid=ts.reduce((s,t)=>s+trPaid(t),0);return{total,paid,remain:Math.max(0,total-paid),ts}}
+function fuStatus(f){return (f.status==='pending'&&f.due<TODAY)?'overdue':f.status}
+const badge=(o)=>`<span class="badge ${o.c}">${o.l}</span>`;
+const branchTag=b=>`<span class="tag ${b==='b1'?'baku':'nax'}">${ic('pin',12)}${BRANCHES[b]}</span>`;
+const apptEnd=a=>m2t(t2m(a.start)+(+a.duration));
+function searchPatients(q){q=(q||'').trim();if(!q)return DB.patients.slice();const nq=norm(q),dq=digits(q),uq=q.toUpperCase().replace(/\s/g,'');
+ return DB.patients.filter(p=>norm(p.full_name).includes(nq)||(dq.length>=3&&digits(p.phone).includes(dq))||(uq.length>=3&&p.pin.includes(uq)))}
+function lastTreatment(pid){return TRS().filter(t=>t.patientId===pid).sort((a,b)=>b.date.localeCompare(a.date))[0]}
+function nextAppt(pid){return DB.appointments.filter(a=>a.patientId===pid&&a.status==='scheduled'&&a.date>=TODAY).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start))[0]}
+function periodRange(){const p=UI.period;if(p==='today')return[TODAY,TODAY];if(p==='yesterday')return[D(-1),D(-1)];if(p==='7d')return[D(-6),TODAY];if(p==='month')return[TODAY.slice(0,8)+'01',TODAY];return[UI.pDate,UI.pDate]}
+function periodLabel(){const p=UI.period;return p==='today'?'Bu gün':p==='yesterday'?'Dünən':p==='7d'?'Son 7 gün':p==='month'?'Bu ay':fmtDate(UI.pDate)}
+
+/* ====================================================================
+   Shell: topbar, sidebar, bottom navigation
+   ==================================================================== */
+function overdueCount(){return DB.followups.filter(f=>fuVisible(f)&&fuStatus(f)==='overdue').length}
+function renderShell(){
+ const u=me(),r=UI.role,cur=route().page;
+ let branchCtl;
+ if(r==='owner')branchCtl=`<select class="branch-pill" data-change="branch" aria-label="Filial">${[['all','Hər iki filial'],['b1','Bakı'],['b2','Naxçıvan']].map(([v,l])=>`<option value="${v}" ${UI.branch===v?'selected':''}>${l}</option>`).join('')}</select>`;
+ else branchCtl=`<span class="branch-pill">${ic('pin',15)}${u.branches.map(b=>BRANCHES[b]).join(' · ')}</span>`;
+ document.getElementById('topbar').innerHTML=`
+  <div class="brand" data-act="home"><div class="brand-mark">${ic('tooth',19)}</div><div class="brand-txt"><div class="brand-name">Stomatoloji Klinika <span class="demo-tag">Prototip</span></div><div class="brand-sub">İdarəetmə sistemi</div></div></div>
+  <div class="tb-search" id="tb-search">${ic('search',17)}<input id="gsearch" data-input="gsearch" autocomplete="off" placeholder="Pasiyent axtar: ad, telefon və ya FİN"><div id="gsr"></div></div>
+  <div class="tb-spacer"></div>
+  <button class="icon-btn mobile-only" data-act="msearch" aria-label="Axtarış">${ic('search',19)}</button>
+  ${branchCtl}
+  <div style="position:relative">
+   <button class="user-btn" data-act="userdd"><div class="avatar">${initials(u.name)}</div><div class="txt"><div class="nm">${esc(u.name)}</div><div class="rl">${ROLE_LABEL[r]}</div></div><span class="txt">${ic('down',16)}</span></button>
+   <div id="userdd"></div>
+  </div>`;
+ const nav=perm().nav,oc=overdueCount();
+ document.getElementById('sidebar').innerHTML=`<div class="nav-label">Menyu</div>`+nav.map(k=>`<button class="nav-item ${cur===k||(cur==='patient'&&k==='patients')?'active':''}" data-act="nav" data-p="${k}">${ic(NAV[k].i,19)}<span>${NAV[k].l}</span>${k==='followups'&&oc?`<span class="cnt">${oc}</span>`:''}</button>`).join('')+
+  `<div class="side-foot"><b>${esc(u.name)}</b><br>${ROLE_LABEL[r]} · ${u.branches.map(b=>BRANCHES[b]).join(', ')}</div>`;
+ // Bottom nav: max 5 items; extra items under "Digər"
+ let items=nav.slice(),more=[];
+ if(items.length>5){more=items.slice(4);items=items.slice(0,4)}
+ document.getElementById('bottomnav').innerHTML=items.map(k=>`<button class="bn ${cur===k||(cur==='patient'&&k==='patients')?'active':''}" data-act="nav" data-p="${k}">${ic(NAV[k].i,22)}<span>${NAV[k].s}</span>${k==='followups'&&oc?`<span class="cnt">${oc}</span>`:''}</button>`).join('')+
+  (more.length?`<button class="bn ${more.includes(cur)?'active':''}" data-act="more">${ic('grid',22)}<span>Digər</span>${more.includes('followups')&&oc?`<span class="cnt">${oc}</span>`:''}</button>`:'');
+}
+function userDropdown(){
+ const el=document.getElementById('userdd');
+ if(el.innerHTML){el.innerHTML='';return}
+ el.innerHTML=`<div class="dropdown"><div class="dd-head"><b>Demo: istifadəçi rolunu dəyişin</b>Real giriş deyil — rolların icazələrini göstərmək üçündür</div>
+  ${Object.keys(DEMO_USER).map(r=>{const u=userById(DEMO_USER[r]);return `<button class="dd-item ${UI.role===r?'on':''}" data-act="role" data-r="${r}"><div class="avatar">${initials(u.name)}</div><div class="grow"><div class="t">${ROLE_LABEL[r]}</div><div class="s">${esc(u.name)} · ${u.branches.map(b=>BRANCHES[b]).join(', ')}</div></div>${UI.role===r?`<span class="chk">${ic('check',18)}</span>`:''}</button>`}).join('')}
+  <div class="dd-foot"><button class="dd-item" data-act="reset">${ic('refresh',17)}<div class="grow"><div class="s" style="color:var(--text-2)">Demo məlumatlarını sıfırla</div></div></button></div></div>`;
+}
+function renderSearchResults(q,target){
+ const box=document.getElementById(target);if(!box)return;
+ if(!q.trim()){box.innerHTML='';return}
+ const res=searchPatients(q).slice(0,7);
+ box.innerHTML=`<div class="${target==='gsr'?'sr':''}">`+(res.length?res.map(p=>`<div class="li" data-act="open-patient" data-id="${p.id}"><div class="avatar">${initials(p.full_name)}</div><div class="grow"><div class="main-t">${esc(p.full_name)}</div><div class="sub-t">${esc(p.phone)} · FİN: ${p.pin}</div></div>${ic('right',16)}</div>`).join('')
+  :`<div class="sr-empty">${ic('search',20)}<div style="margin-top:6px"><b style="color:var(--text)">Pasiyent tapılmadı</b></div><div class="small">“${esc(q)}” üzrə nəticə yoxdur</div><button class="btn btn-primary btn-sm" data-act="new-patient" data-q="${esc(q)}">${ic('userplus',16)}Yeni pasiyent qeydiyyatı</button></div>`)+'</div>';
+}
+
+/* ====================================================================
+   Router
+   ==================================================================== */
+function route(){const h=location.hash.replace(/^#\/?/,'');const[page,id]=h.split('/');return{page:page||defaultPage(),id}}
+function defaultPage(){return perm().dashboard?'dashboard':'patients'}
+function go(path){if(location.hash==='#/'+path)render();else location.hash='#/'+path}
+function allowed(page){return page==='patient'||perm().nav.includes(page)}
+function render(){
+ const{page,id}=route();
+ if(!allowed(page)){toast('Bu bölməyə sizin rolunuz üçün giriş yoxdur',true);location.replace('#/'+defaultPage());return}
+ renderShell();
+ const v=document.getElementById('view');
+ const pages={dashboard:pageDashboard,patients:pagePatients,patient:()=>pagePatient(id),appointments:pageAppointments,payments:pagePayments,followups:pageFollowups};
+ v.innerHTML=(pages[page]||pagePatients)();
+ renderFab(page,id);
+ if(page==='patients'){renderPatientList()}
+ if(page==='appointments'){const w=document.querySelector('.cal-wrap');if(w&&UI.apptDate===TODAY){const n=new Date();const m=n.getHours()*60+n.getMinutes();w.scrollTop=Math.max(0,(Math.min(Math.max(m,540),1080)-570)/30*44)}}
+}
+function renderFab(page,id){
+ const map={patients:['new-patient','Yeni pasiyent','userplus'],appointments:perm().manageAppt?['new-appt','Yeni qəbul','plus']:null,payments:perm().addPay?['new-pay','Ödəniş','plus']:null,followups:['new-fu','Yeni təqib','plus'],dashboard:['msearch','Pasiyent axtar','search']};
+ const f=map[page];
+ document.getElementById('fab-root').innerHTML=f?`<button class="fab" data-act="${f[0]}">${ic(f[2],20)}${f[1]}</button>`:'';
+}
+function pageHead(title,sub,actions){return `<div class="page-head"><div><h1>${title}</h1>${sub?`<div class="sub">${sub}</div>`:''}</div>${actions?`<div class="page-actions">${actions}</div>`:''}</div>`}
+function listView(cols,rows,empty){
+ if(!rows.length)return empty;
+ return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${cols.map(c=>`<th class="${c.c||''}">${c.l}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr ${r.a||''}>${r.cells.map((x,i)=>`<td class="${cols[i].c||''}">${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="mcards">${rows.map(r=>`<div class="mcard" ${r.a||''}>${r.card}</div>`).join('')}</div>`;
+}
+const emptyBox=(icon,t,s,btn)=>`<div class="empty"><div class="ic-wrap">${ic(icon,20)}</div><h4>${t}</h4><div class="small">${s||''}</div>${btn||''}</div>`;
+const pcell=p=>`<div class="pcell"><div class="avatar">${initials(p.full_name)}</div><div><div class="nm">${esc(p.full_name)}</div><div class="small muted">${esc(p.phone)}</div></div></div>`;
+
+/* ====================================================================
+   Dashboard (BRD §11)
+   ==================================================================== */
+function pageDashboard(){
+ const r=UI.role,u=me(),own=r==='dentist',P=perm();
+ const[from,to]=periodRange();const inP=d=>d>=from&&d<=to;
+ const appts=DB.appointments.filter(a=>inP(a.date)&&apptVisible(a));
+ const trs=TRS().filter(t=>inP(t.date)&&trVisible(t));
+ const pays=DB.payments.filter(p=>inP(p.date)&&payListVisible(p));
+ const finTs=TRS().filter(t=>trVisible(t)&&finVisible(t));
+ const outstanding=finTs.reduce((s,t)=>s+trRemain(t),0),collected=finTs.reduce((s,t)=>s+trPaid(t),0);
+ const newPts=DB.patients.filter(p=>inP(p.createdAt)&&inBranch(p.createdBranch));
+ const fus=DB.followups.filter(fuVisible);
+ const fc=s=>fus.filter(f=>fuStatus(f)===s).length;
+ const sum=a=>a.reduce((s,p)=>s+p.amount,0);
+ const pl=periodLabel();
+ const scope=r==='owner'?(UI.branch==='all'?'Hər iki filial':BRANCHES[UI.branch]):r==='coordinator'?BRANCHES[u.branches[0]]:'Sizin məlumatlarınız';
+ let h=pageHead(`Salam, ${esc(r==='dentist'?u.name:u.name.split(' ')[0])}`,`${scope} · ${pl}`,`<button class="btn" data-act="nav" data-p="patients">${ic('search',16)}Pasiyent axtar</button>${P.manageAppt?`<button class="btn btn-primary" data-act="new-appt">${ic('plus',16)}Yeni qəbul</button>`:''}`);
+ h+=`<div class="filterbar">${r==='owner'?`<div class="seg">${[['all','Hər iki filial'],['b1','Bakı'],['b2','Naxçıvan']].map(([v,l])=>`<button class="${UI.branch===v?'on':''}" data-act="set-branch" data-v="${v}">${l}</button>`).join('')}</div>`:''}
+  <div class="chips">${[['today','Bu gün'],['yesterday','Dünən'],['7d','Son 7 gün'],['month','Bu ay']].map(([v,l])=>`<button class="chip ${UI.period===v?'on':''}" data-act="period" data-v="${v}">${l}</button>`).join('')}</div>
+  <input type="date" class="input w-auto" style="height:34px" value="${UI.period==='date'?UI.pDate:''}" data-change="pdate" aria-label="Tarix seçin"></div>`;
+ // 1. Headline numbers
+ const stat=(icon,v,l,act,tone)=>`<button class="stat ${tone||''}" data-act="nav" data-p="${act}"><span class="si">${ic(icon,22)}</span><span><span class="sv">${v}</span><span class="sl">${l}</span></span></button>`;
+ h+=`<div class="stats">
+  ${stat('calendar',appts.filter(a=>a.status!=='cancelled').length,'Qəbul','appointments')}
+  ${stat('clipboard',trs.length,'Tamamlanmış qəbul','appointments')}
+  ${stat('wallet',money(sum(pays)),'Ödəniş','payments','ok')}
+  ${stat('alert',money(outstanding),'Qalıq borc','payments',outstanding?'warn':'')}
+  ${!own?stat('userplus',newPts.length,'Yeni pasiyent','patients'):''}
+  ${P.followups?stat('chat',fc('overdue'),'Gecikmiş təqib','followups',fc('overdue')?'danger':''):''}
+ </div>`;
+ // 2. Appointments donut (status)
+ const AC={completed:'#16a34a',scheduled:'#2a78d6',noshow:'#e34948',cancelled:'#c4c8cf'};
+ const segs=['completed','scheduled','noshow','cancelled'].map(k=>({k,l:APPT_STATUS[k].l,v:appts.filter(a=>a.status===k).length,c:AC[k]}));
+ const apCard=vizCard('calendar','Qəbullar',`<div class="donut-row">${donut(segs,appts.length,'qəbul')}<div class="legend-col">${segs.map(s=>`<div class="lgd"><i style="background:${s.c}"></i><span>${s.l}</span><b>${s.v}</b></div>`).join('')}</div></div>`,'appt-day',from);
+ // 3. Payments, last 7 days ending at period end
+ const days=Array.from({length:7},(_,i)=>addDays(to,i-6));
+ const dv=days.map(d=>sum(DB.payments.filter(p=>p.date===d&&payListVisible(p))));const mx=Math.max(...dv,1);
+ const cols=`<div class="cols">${days.map((d,i)=>{const pct=dv[i]/mx*100;const lab=dv[i]&&(dv[i]===Math.max(...dv)||i===6);const[y,m,dd]=d.split('-').map(Number);const wd=WD_SHORT[new Date(y,m-1,dd).getDay()];
+  return `<div class="col" data-tip="${fmtDate(d)}: ${money(dv[i])}"><span class="cv">${lab?Math.round(dv[i]):''}</span><span class="cb" style="height:${Math.max(pct,dv[i]?3:0)}%"></span><span class="cl ${d===TODAY?'on':''}">${wd}<br>${dd}</span></div>`}).join('')}</div>`;
+ const payCard=P.finance?vizCard('wallet','Ödənişlər — son 7 gün',`<div class="big-n">${money(dv.reduce((x,y)=>x+y,0))}</div>${cols}`,'nav','payments'):'';
+ // 4. Payment methods (validated categorical: orange / violet / yellow)
+ const MC={cash:'#eb6834',c2c:'#4a3aa7',pos:'#eda100'};
+ const ms=Object.keys(PAY_METHODS).map(k=>({k,l:PAY_METHODS[k],v:sum(pays.filter(p=>p.method===k)),c:MC[k]}));const mt=ms.reduce((s,x)=>s+x.v,0);
+ const methCard=P.finance?vizCard('wallet','Ödəniş üsulları — '+pl,mt?`${stackBar(ms,money)}<div class="legend-col" style="margin-top:14px">${ms.map(x=>`<div class="lgd"><i style="background:${x.c}"></i><span>${x.l}</span><b>${money(x.v)}</b><em>${Math.round(x.v/mt*100)}%</em></div>`).join('')}</div>`:emptyMini('Bu dövrdə ödəniş yoxdur'),'nav','payments'):'';
+ // 5. Collection ring (status: paid = good, outstanding = warning)
+ const tot=collected+outstanding,pct=tot?Math.round(collected/tot*100):100;
+ const colCard=P.finance?vizCard('alert','Borcların yığılması',`<div class="donut-row">${donut([{l:'Ödənilib',v:collected,c:'#16a34a'},{l:'Qalıq',v:outstanding,c:'#eda100'}],pct+'%','ödənilib',true)}<div class="legend-col"><div class="lgd"><i style="background:#16a34a"></i><span>Ödənilib</span><b>${money(collected)}</b></div><div class="lgd"><i style="background:#eda100"></i><span>Qalıq borc</span><b class="debt">${money(outstanding)}</b></div></div></div>`,'pay-tab','debts'):'';
+ // 6. Follow-ups by status
+ const FC={overdue:'#e34948',pending:'#eda100',contacted:'#2a78d6',completed:'#16a34a'};
+ const fs=['overdue','pending','contacted','completed'].map(k=>({k,l:FU_STATUS[k].l,v:fc(k),c:FC[k]}));const ft=fus.length;
+ const fuCard=P.followups?vizCard('chat','Təqiblər (WhatsApp)',`${ft?stackBar(fs):''}<div class="fu-grid">${fs.map(x=>`<button class="fu-n ${x.k==='overdue'&&x.v?'hot':''}" data-act="fu-go" data-v="${x.k}"><i style="background:${x.c}"></i><b>${x.v}</b><span>${x.l}</span></button>`).join('')}</div>`,'nav','followups'):'';
+ // 7. Branch comparison (owner, both branches)
+ let brCard='';
+ if(r==='owner'&&UI.branch==='all'){
+  const BC={b1:'#2a78d6',b2:'#1baf7a'};
+  const met=[['Qəbullar',b=>appts.filter(x=>x.branch===b&&x.status!=='cancelled').length,v=>v],['Müalicələr',b=>trs.filter(x=>x.branch===b).length,v=>v],['Ödənişlər',b=>sum(pays.filter(x=>x.branch===b)),money],['Qalıq borc',b=>TRS().filter(x=>x.branch===b).reduce((s,x)=>s+trRemain(x),0),money]];
+  brCard=vizCard('building','Filiallar müqayisəsi',`<div class="legend-row"><span><i style="background:${BC.b1}"></i>Bakı</span><span><i style="background:${BC.b2}"></i>Naxçıvan</span></div>${met.map(([l,f,fmt])=>{const a=f('b1'),b=f('b2'),m=Math.max(a,b,1);return `<div class="cmp"><div class="cmp-l">${l}</div>${[['b1',a],['b2',b]].map(([k,v])=>`<div class="cmp-r" data-tip="${BRANCHES[k]} — ${l}: ${fmt(v)}" data-act="set-branch" data-v="${k}"><span class="cmp-b" style="width:${Math.max(v/m*100,v?2:0)}%;background:${BC[k]}"></span><span class="cmp-v">${fmt(v)}</span></div>`).join('')}</div>`}).join('')}`,'','',true);
+ }
+ // 8. Next appointments strip
+ const nextA=DB.appointments.filter(a=>apptVisible(a)&&a.status==='scheduled'&&(a.date>TODAY||(a.date===TODAY))).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start)).slice(0,6);
+ const nextCard=`<div class="card viz wide"><div class="card-head"><h3>${ic('clock',17)}Növbəti qəbullar</h3><button class="link-btn small" data-act="appt-day" data-v="${TODAY}" aria-label="Təqvim">${ic('right',18)}</button></div><div class="card-body"><div class="next">${nextA.length?nextA.map(a=>`<button class="nx" data-act="open-appt" data-id="${a.id}"><span class="nx-t">${a.start}</span><span class="nx-d">${relDay(a.date)}</span><span class="nx-p">${esc(ptById(a.patientId).full_name)}</span><span class="nx-s">${esc(userById(a.dentistId).name.replace('Dr. ',''))} · ${BRANCHES[a.branch]}</span></button>`).join(''):emptyMini('Planlaşdırılmış qəbul yoxdur')}</div></div></div>`;
+ h+=`<div class="viz-grid">${apCard}${payCard}${methCard}${colCard}${fuCard}${brCard}${nextCard}</div>`;
+ return h;
+}
+function vizCard(icon,title,body,act,v,wide){return `<div class="card viz ${wide?'wide':''}"><div class="card-head"><h3>${ic(icon,17)}${title}</h3>${act?`<button class="link-btn small" data-act="${act}" ${act==='nav'?`data-p="${v}"`:`data-v="${v}"`} aria-label="Ətraflı">${ic('right',18)}</button>`:''}</div><div class="card-body">${body}</div></div>`}
+const emptyMini=t=>`<div class="empty" style="padding:18px 0">${t}</div>`;
+function donut(segs,center,sub,isRing){
+ const R=52,C=2*Math.PI*R,tot=segs.reduce((s,x)=>s+x.v,0);let off=0;const gap=tot&&segs.filter(x=>x.v).length>1?3:0;
+ const arcs=tot?segs.filter(x=>x.v).map(x=>{const len=x.v/tot*C;const a=`<circle r="${R}" cx="70" cy="70" fill="none" stroke="${x.c}" stroke-width="16" stroke-dasharray="${Math.max(len-gap,0.01)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 70 70)"><title>${x.l}: ${isRing?money(x.v):x.v}</title></circle>`;off+=len;return a}).join(''):'';
+ return `<svg class="donut" viewBox="0 0 140 140" role="img" aria-label="${sub}"><circle r="${R}" cx="70" cy="70" fill="none" stroke="#eef0f3" stroke-width="16"/>${arcs}<text x="70" y="70" text-anchor="middle" class="dn-v">${center}</text><text x="70" y="88" text-anchor="middle" class="dn-l">${sub}</text></svg>`;
+}
+function stackBar(items,fmt){fmt=fmt||(v=>v);return `<div class="sbar">${items.filter(x=>x.v).map(x=>`<span style="flex:${x.v};background:${x.c}" data-tip="${x.l}: ${fmt(x.v)}"></span>`).join('')}</div>`}
+
+/* ====================================================================
+   Patients (BRD §5, §12)
+   ==================================================================== */
+function pagePatients(){
+ let h=pageHead('Pasiyentlər','',`<button class="btn btn-primary" data-act="new-patient">${ic('userplus',16)}Yeni pasiyent</button>`);
+ h+=`<div class="search-lg">${ic('search',19)}<input class="input" id="pt-q" data-input="ptq" value="${esc(UI.ptQuery)}" placeholder="Ad, telefon və ya FİN" autocomplete="off"></div>`;
+ if(isRole('dentist'))h+=`<div class="filterbar"><div class="seg"><button class="${!UI.ptMine?'on':''}" data-act="pt-mine" data-v="0">Bütün pasiyentlər</button><button class="${UI.ptMine?'on':''}" data-act="pt-mine" data-v="1">Mənim pasiyentlərim</button></div></div>`;
+ h+=`<div class="card"><div id="pt-list"></div></div>`;
+ return h;
+}
+function renderPatientList(){
+ const el=document.getElementById('pt-list');if(!el)return;
+ let res=searchPatients(UI.ptQuery);
+ if(isRole('dentist')&&UI.ptMine){const s=myPatientIds();res=res.filter(p=>s.has(p.id))}
+ res.sort((a,b)=>a.full_name.localeCompare(b.full_name,'az'));
+ const fin=!!perm().finance;
+ const cols=[{l:'Pasiyent'},{l:'FİN'},{l:'Doğum tarixi'},{l:'Son müalicə'},{l:'Növbəti qəbul'}];
+ if(fin)cols.push({l:'Qalıq',c:'num'});
+ const rows=res.map(p=>{const lt=lastTreatment(p.id),na=nextAppt(p.id);const f=fin?ptFin(p.id,finVisible):null;
+  const cells=[pcell(p),`<span class="nowrap">${p.pin}</span>`,`${fmtDate(p.dob)} <span class="muted small">(${age(p.dob)})</span>`,lt?`<div>${esc(lt.treatment)}</div><div class="small muted">${fmtDate(lt.date)} · ${BRANCHES[lt.branch]}</div>`:'<span class="muted">—</span>',na?`<div>${relDay(na.date)}, ${na.start}</div><div class="small muted">${esc(userById(na.dentistId).name)}</div>`:'<span class="muted">—</span>'];
+  if(fin)cells.push(f.remain>0?`<span class="debt">${money(f.remain)}</span>`:`<span class="zero">0 AZN</span>`);
+  return{a:`data-act="open-patient" data-id="${p.id}"`,cells,card:`<div class="mc-row"><div class="pcell"><div class="avatar">${initials(p.full_name)}</div><div><div class="mc-t">${esc(p.full_name)}</div><div class="mc-s">${esc(p.phone)} · ${p.pin}</div></div></div>${fin&&f.remain>0?`<span class="debt small">${money(f.remain)}</span>`:ic('right',18)}</div>${lt?`<div class="mc-s" style="margin:6px 0 0 42px">Son: ${esc(lt.treatment)} · ${fmtDate(lt.date)}</div>`:''}`}});
+ const q=UI.ptQuery.trim();
+ el.innerHTML=`<div class="card-head"><h3>${q?`Axtarış nəticəsi: ${res.length}`:`Bütün pasiyentlər: ${res.length}`}</h3></div>`+listView(cols,rows,q?emptyBox('search','Pasiyent tapılmadı','',`<button class="btn btn-primary" data-act="new-patient" data-q="${esc(q)}">${ic('userplus',16)}Yeni pasiyent qeydiyyatı</button>`):emptyBox('users','Pasiyent yoxdur',''));
+}
+
+/* ====================================================================
+   Patient profile (BRD §6)
+   ==================================================================== */
+function pagePatient(id){
+ const p=ptById(id);if(!p)return emptyBox('alert','Pasiyent tapılmadı','',`<button class="btn" data-act="nav" data-p="patients">Pasiyentlər</button>`);
+ const P=perm(),fin=!!P.finance;
+ const trs=TRS().filter(t=>t.patientId===id);
+ const appts=DB.appointments.filter(a=>a.patientId===id&&a.status!=='completed');
+ const allV=DB.appointments.filter(a=>a.patientId===id);
+ const chip=(i,v,tip)=>`<span class="pc" data-tip="${tip}">${ic(i,15)}<span>${v}</span></span>`;
+ let h=`<button class="back" data-act="back">${ic('back',16)}Geri</button>`;
+ h+=`<div class="card" style="margin-bottom:16px"><div class="p-head"><div class="avatar lg">${initials(p.full_name)}</div><div class="info">
+   <div class="row wrap"><h1>${esc(p.full_name)}</h1>${!allV.length?'<span class="badge b-green">Yeni</span>':''}</div>
+   <div class="pchips">${chip('phone',esc(p.phone),'Telefon')}${chip('idcard',p.pin,'FİN')}${chip('cake',`${fmtDate(p.dob)} · ${age(p.dob)}`,'Doğum tarixi · yaş')}${chip('user',p.gender,'Cins')}${chip('pin',esc(p.address),'Ünvan')}${chip('heart',esc(p.emergency),'Təcili əlaqə')}${chip('image','Ş/V',`Şəxsiyyət vəsiqəsi: ${esc(p.national_id_image)}`)}</div>
+  </div></div>
+  <div class="p-actions">
+   ${P.manageAppt?`<button class="btn btn-primary" data-act="new-appt" data-pid="${id}">${ic('calendar',16)}Qəbul</button>`:''}
+   <button class="btn ${P.manageAppt?'btn-soft':'btn-primary'}" data-act="new-tr" data-pid="${id}">${ic('clipboard',16)}Müalicə</button>
+   ${P.addPay?`<button class="btn btn-soft" data-act="new-pay" data-pid="${id}">${ic('wallet',16)}Ödəniş</button>`:''}
+   ${P.followups?`<button class="btn btn-soft" data-act="new-fu" data-pid="${id}">${ic('chat',16)}Təqib</button>`:''}
+  </div></div>`;
+ if(fin){const f=ptFin(id,finVisible);
+  h+=`<div class="card finbar"><div class="fb-nums"><div><span class="fb-k"><i style="background:#16a34a"></i>Ödənilib</span><b>${money(f.paid)}</b></div><div><span class="fb-k"><i style="background:#eda100"></i>Qalıq</span><b class="${f.remain?'debt':''}">${money(f.remain)}</b></div><div><span class="fb-k">Cəmi</span><b>${money(f.total)}</b></div>${P.finance!=='all'?`<span class="fb-scope" data-tip="${finScopeNote()}">${ic('lock',15)}</span>`:''}</div>
+   <div class="sbar fb">${f.paid?`<span style="flex:${f.paid};background:#16a34a" data-tip="Ödənilib: ${money(f.paid)}"></span>`:''}${f.remain?`<span style="flex:${f.remain};background:#eda100" data-tip="Qalıq: ${money(f.remain)}"></span>`:''}</div></div>`}
+ // Treatment history
+ const hist=trs.filter(t=>UI.histBranch==='all'||t.branch===UI.histBranch).sort((a,b)=>UI.histSort==='desc'?b.date.localeCompare(a.date):a.date.localeCompare(b.date));
+ const cnt=b=>trs.filter(t=>b==='all'||t.branch===b).length;
+ const trRow=t=>{const[y,m,d]=t.date.split('-');const docs=DB.docs.filter(x=>x.treatmentId===t.id).length;const fv=finVisible(t);const dn=userById(t.dentistId).name;
+  let pill='';
+  if(fv){if(t.price==null)pill=`<span class="badge b-amber">Qiymət yoxdur</span>`;else{const rem=trRemain(t);pill=`<div class="tr-money">${t.discount?`<s>${money(t.price)}</s>`:''}<b>${money(trFinal(t))}</b>${rem?`<span class="badge b-amber nodot">Qalıq ${money(rem)}</span>`:`<span class="badge b-green nodot">${ic('check',12)}Ödənilib</span>`}</div>`}}
+  return `<div class="tr-row" data-act="open-appt" data-id="${t.id}" id="tl-${t.id}"><div class="dbox ${t.branch==='b2'?'nax':''}"><b>${+d}</b><span>${MONTHS[+m-1].slice(0,3)}</span><small>${y}</small></div>
+   <div class="grow"><div class="tr-t">${esc(t.treatment)}</div><div class="tr-m"><span class="mini-av">${initials(dn)}</span><span>${esc(dn.replace('Dr. ',''))}</span>${branchTag(t.branch)}${docs?`<span class="tag">${ic('image',12)}${docs}</span>`:''}</div>${t.notes?`<div class="tr-n">${esc(t.notes)}</div>`:''}</div>${pill}</div>`};
+ const left=`<div class="card"><div class="card-head" style="flex-wrap:wrap"><h3>${ic('clipboard',17)}Müalicə tarixçəsi <span class="cnt-pill">${trs.length}</span></h3>
+   <div class="row wrap"><div class="seg">${[['all','Hamısı'],['b1','Bakı'],['b2','Naxçıvan']].map(([v,l])=>`<button class="${UI.histBranch===v?'on':''}" data-act="hist-branch" data-v="${v}">${l} ${cnt(v)}</button>`).join('')}</div>
+   <button class="icon-btn" data-act="hist-sort" data-tip="${UI.histSort==='desc'?'Ən yeni əvvəl':'Ən köhnə əvvəl'}" aria-label="Sırala">${ic(UI.histSort==='desc'?'down':'up',16)}</button></div></div>
+   <div class="card-body flush">${hist.length?hist.map(trRow).join(''):emptyBox('clipboard','Müalicə yoxdur','',`<button class="btn btn-soft btn-sm" data-act="new-tr" data-pid="${id}">${ic('plus',15)}Müalicə</button>`)}</div></div>`;
+ // Appointments
+ const up=appts.filter(a=>a.date>=TODAY&&a.status==='scheduled').sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
+ const past=appts.filter(a=>!up.includes(a)).sort((a,b)=>(b.date+b.start).localeCompare(a.date+a.start)).slice(0,2);
+ const apRow=(a,old)=>`<div class="li ${old?'old':''}" data-act="open-appt" data-id="${a.id}"><div class="time-box">${a.start}<small>${fmtShort(a.date)}</small></div><div class="grow"><div class="main-t">${esc(a.treatment||'Qəbul')}</div><div class="sub-t">${esc(userById(a.dentistId).name.replace('Dr. ',''))} · ${BRANCHES[a.branch]}</div></div>${badge(APPT_STATUS[a.status])}</div>`;
+ const side=[];
+ side.push(`<div class="card"><div class="card-head"><h3>${ic('calendar',17)}Qəbullar</h3>${P.manageAppt?`<button class="icon-btn" data-act="new-appt" data-pid="${id}" aria-label="Yeni qəbul">${ic('plus',16)}</button>`:''}</div><div class="card-body flush">${up.map(a=>apRow(a)).join('')}${past.map(a=>apRow(a,true)).join('')}${!up.length&&!past.length?emptyMini('Qəbul yoxdur'):''}</div></div>`);
+ if(fin){const ps=DB.payments.filter(x=>x.patientId===id&&finVisible(trById(x.treatmentId))).sort((a,b)=>b.date.localeCompare(a.date));
+  side.push(`<div class="card"><div class="card-head"><h3>${ic('wallet',17)}Ödənişlər</h3>${P.addPay?`<button class="icon-btn" data-act="new-pay" data-pid="${id}" aria-label="Ödəniş">${ic('plus',16)}</button>`:''}</div><div class="card-body flush">${ps.length?ps.map(x=>`<div class="li" data-act="open-tr" data-id="${x.treatmentId}"><span class="m-ic ${x.method}">${ic(x.method==='cash'?'cash':x.method==='pos'?'wallet':'card',16)}</span><div class="grow"><div class="main-t">${money(x.amount)}</div><div class="sub-t">${fmtDate(x.date)} · ${PAY_METHODS[x.method]}</div></div>${ic('right',16)}</div>`).join(''):emptyMini('Ödəniş yoxdur')}</div></div>`)}
+ if(P.followups){const fs=DB.followups.filter(f=>f.patientId===id).sort((a,b)=>b.due.localeCompare(a.due));
+  side.push(`<div class="card"><div class="card-head"><h3>${ic('chat',17)}Təqiblər</h3><button class="icon-btn" data-act="new-fu" data-pid="${id}" aria-label="Təqib">${ic('plus',16)}</button></div><div class="card-body flush">${fs.length?fs.map(f=>`<div class="li" data-act="fu-outcome" data-id="${f.id}"><span class="m-ic wa">${ic('chat',16)}</span><div class="grow"><div class="main-t">${fmtDate(f.due)}</div><div class="sub-t">${esc(userById(f.coordinatorId).name)}</div></div>${badge(FU_STATUS[fuStatus(f)])}</div>`).join(''):emptyMini('Təqib yoxdur')}</div></div>`)}
+ const pdocs=DB.docs.filter(d=>d.patientId===id&&(fin||d.kind!=='contract'));
+ side.push(`<div class="card"><div class="card-head"><h3>${ic('image',17)}Sənədlər <span class="cnt-pill">${pdocs.length}</span></h3><button class="icon-btn" data-act="upload" data-pid="${id}" aria-label="Yüklə">${ic('upload',16)}</button></div><div class="card-body">${pdocs.length?`<div class="docs">${pdocs.map(docTile).join('')}</div>`:`<div class="upload" data-act="upload" data-pid="${id}">${ic('upload',17)}Yüklə</div>`}</div></div>`);
+ h+=`<div class="grid g-main"><div class="stack">${left}</div><div class="stack">${side.join('')}</div></div>`;
+ return h;
+}
+function docTile(d){return `<div class="doc" title="${esc(d.name)}"><div class="th">${d.thumb?`<img src="${d.thumb}" alt="">`:ic(d.kind==='photo'?'image':'file',22)}</div><div class="dn">${esc(d.name)}</div></div>`}
+
+/* ====================================================================
+   Appointments (BRD §7)
+   ==================================================================== */
+function calDentists(){const s=scopeBranch();if(isRole('dentist'))return[me()];return DENTISTS.filter(d=>s==='all'||d.branches.includes(s))}
+function pageAppointments(){
+ const P=perm(),d=UI.apptDate;
+ const list=DB.appointments.filter(a=>a.date===d&&apptVisible(a)).sort((a,b)=>a.start.localeCompare(b.start));
+ const sc=list.filter(a=>a.status!=='cancelled');
+ let h=pageHead('Qəbullar','',P.manageAppt?`<button class="btn btn-primary" data-act="new-appt">${ic('plus',16)}Yeni qəbul</button>`:'');
+ if(!P.manageAppt)h+=`<div style="margin:-8px 0 14px"><span class="pill-note">${ic('lock',14)}Yalnız baxış</span></div>`;
+ const AC={completed:'#16a34a',scheduled:'#2a78d6',noshow:'#e34948',cancelled:'#c4c8cf'};
+ h+=`<div class="ap-sum">${['scheduled','completed','noshow','cancelled'].map(k=>`<div class="ap-s"><i style="background:${AC[k]}"></i><b>${list.filter(a=>a.status===k).length}</b><span>${APPT_STATUS[k].l}</span></div>`).join('')}<div class="ap-s tot"><b>${sc.length}</b><span>Cəmi qəbul</span></div></div>`;
+ h+=`<div class="filterbar" style="justify-content:space-between"><div class="date-nav"><button class="icon-btn" data-act="appt-shift" data-v="-1" aria-label="Əvvəlki gün">${ic('left',18)}</button><button class="btn btn-sm" data-act="appt-day" data-v="${TODAY}">Bu gün</button><button class="icon-btn" data-act="appt-shift" data-v="1" aria-label="Növbəti gün">${ic('right',18)}</button><input type="date" class="input w-auto" style="height:38px" value="${d}" data-change="apptdate"></div>
+  <div class="row wrap"><span class="dl strong">${fmtLong(d)}</span><span class="seg hide-m">${[['calendar','Təqvim'],['list','Siyahı']].map(([v,l])=>`<button class="${UI.apptView===v?'on':''}" data-act="appt-view" data-v="${v}">${l}</button>`).join('')}</span></div></div>`;
+ const legend=`<div class="legend" style="padding:10px 16px;border-top:1px solid var(--border-2)"><span><i style="background:#eaf1fe;border-left:3px solid var(--primary)"></i>Planlaşdırılıb</span><span><i style="background:var(--success-bg);border-left:3px solid var(--success)"></i>Tamamlandı</span><span><i style="background:var(--danger-bg);border-left:3px solid var(--danger)"></i>Gəlmədi</span><span><i style="background:var(--gray-bg);border-left:3px solid var(--faint)"></i>Ləğv edildi</span></div>`;
+ // Calendar grid (desktop/tablet)
+ const ds=calDentists(),START=9*60,END=19*60,slots=(END-START)/30;
+ const grid=`<div class="card cal-view ${UI.apptView==='calendar'?'':'hide'}"><div class="cal-wrap"><div class="cal" style="grid-template-columns:62px repeat(${ds.length},minmax(160px,1fr))">
+   <div class="cal-h" style="border-left:0"></div>${ds.map(x=>`<div class="cal-h">${esc(x.name)}<small>${x.branches.map(b=>BRANCHES[b]).join(' · ')}</small></div>`).join('')}
+   <div class="cal-times">${Array.from({length:slots},(_,i)=>`<div class="cal-t">${i%2===0?m2t(START+i*30):''}</div>`).join('')}</div>
+   ${ds.map(x=>`<div class="cal-col">${Array.from({length:slots},(_,i)=>`<div class="cal-slot ${P.manageAppt?'can':''}" ${P.manageAppt?`data-act="new-appt" data-dentist="${x.id}" data-time="${m2t(START+i*30)}" data-date="${d}" title="Yeni qəbul: ${m2t(START+i*30)}"`:''}></div>`).join('')}
+    ${list.filter(a=>a.dentistId===x.id).map(a=>{const top=(t2m(a.start)-START)/30*44,ht=Math.max(a.duration/30*44-3,24);const p=ptById(a.patientId);return `<div class="ev ${a.status}" style="top:${top+1}px;height:${ht}px" data-act="open-appt" data-id="${a.id}"><div class="t">${a.start}–${apptEnd(a)} · ${esc(p.full_name)}</div><div>${esc(a.treatment||'')} · ${BRANCHES[a.branch]}, ${roomById(a.roomId).name}</div></div>`}).join('')}</div>`).join('')}
+  </div></div>${legend}</div>`;
+ const rows=list.map(a=>{const p=ptById(a.patientId);return{a:`data-act="open-appt" data-id="${a.id}"`,cells:[`<b>${a.start}–${apptEnd(a)}</b>`,pcell(p),esc(userById(a.dentistId).name),`${branchTag(a.branch)} <span class="small muted">${roomById(a.roomId).name}</span>`,esc(a.treatment||'—'),badge(APPT_STATUS[a.status])],
+  card:`<div class="mc-row"><div class="row"><div class="time-box" style="width:auto;text-align:left">${a.start}<small>${a.duration} dəq</small></div><div style="margin-left:6px"><div class="mc-t">${esc(p.full_name)}</div><div class="mc-s">${esc(userById(a.dentistId).name)}</div></div></div>${badge(APPT_STATUS[a.status])}</div><div class="mc-s" style="margin-top:6px">${esc(a.treatment||'')} · ${BRANCHES[a.branch]}, ${roomById(a.roomId).name}</div>`}});
+ const lst=`<div class="card ${UI.apptView==='list'?'':'list-only-m'}">${listView([{l:'Vaxt'},{l:'Pasiyent'},{l:'Həkim'},{l:'Filial / kabinet'},{l:'Xidmət'},{l:'Status'}],rows,emptyBox('calendar','Bu gün üçün qəbul yoxdur','',P.manageAppt?`<button class="btn btn-primary btn-sm" data-act="new-appt" data-date="${d}">${ic('plus',15)}Yeni qəbul</button>`:''))}</div>`;
+ return h+grid+lst;
+}
+
+/* ====================================================================
+   Treatments (BRD §8)
+   ==================================================================== */
+function pagePayments(){
+ const P=perm();
+ let h=pageHead('Ödənişlər','',P.addPay?`<button class="btn btn-primary" data-act="new-pay">${ic('plus',16)}Ödəniş</button>`:'');
+ const pays=DB.payments.filter(payListVisible);const mStart=TODAY.slice(0,8)+'01';
+ const today=pays.filter(p=>p.date===TODAY),month=pays.filter(p=>p.date>=mStart);
+ const debts=TRS().filter(t=>trVisible(t)&&finVisible(t)&&trRemain(t)>0);
+ const outstanding=debts.reduce((s,t)=>s+trRemain(t),0);const sum=a=>a.reduce((s,p)=>s+p.amount,0);
+ const MC={cash:'#eb6834',c2c:'#4a3aa7',pos:'#eda100'};
+ const ms=Object.keys(PAY_METHODS).map(k=>({k,l:PAY_METHODS[k],v:sum(month.filter(p=>p.method===k)),c:MC[k]}));
+ const stat=(icon,v,l,tone,act,val)=>`<button class="stat ${tone||''}" ${act?`data-act="${act}" data-v="${val}"`:''}><span class="si">${ic(icon,22)}</span><span><span class="sv">${v}</span><span class="sl">${l}</span></span></button>`;
+ h+=`<div class="grid pay-top"><div class="stats" style="margin:0">${stat('wallet',money(sum(today)),'Bu gün','ok')}${stat('calendar',money(sum(month)),'Bu ay')}${stat('alert',money(outstanding),'Qalıq borc',outstanding?'warn':'','pay-tab','debts')}</div>
+  <div class="card"><div class="card-body"><div class="small muted" style="margin-bottom:8px;font-weight:600">Bu ay · üsul üzrə</div>${sum(month)?stackBar(ms,money):'<div class="sbar"></div>'}<div class="legend-row" style="margin:10px 0 0;flex-wrap:wrap">${ms.map(x=>`<span><i style="background:${x.c}"></i>${x.l.replace(' (C2C)','')} <b>${money(x.v)}</b></span>`).join('')}</div></div></div></div>`;
+ h+=`<div class="filterbar"><div class="seg"><button class="${UI.payTab==='history'?'on':''}" data-act="pay-tab" data-v="history">Tarixçə</button><button class="${UI.payTab==='debts'?'on':''}" data-act="pay-tab" data-v="debts">Qalıq borclar · ${debts.length}</button></div></div>`;
+ if(UI.payTab==='debts'){
+  const rows=debts.sort((a,b)=>trRemain(b)-trRemain(a)).map(t=>{const p=ptById(t.patientId),paid=trPaid(t),fnl=trFinal(t),pct=fnl?Math.round(paid/fnl*100):0;
+   const bar=`<div class="debt-bar" data-tip="${pct}% ödənilib"><div class="sbar">${paid?`<span style="flex:${paid};background:#16a34a"></span>`:''}<span style="flex:${trRemain(t)};background:#eda100"></span></div></div>`;
+   return{a:`data-act="open-tr" data-id="${t.id}"`,cells:[pcell(p),`${esc(t.treatment)}<div class="small muted">${fmtDate(t.date)}</div>`,branchTag(t.branch),bar,`<span class="debt">${money(trRemain(t))}</span><div class="small muted">/ ${money(fnl)}</div>`],
+   card:`<div class="mc-row"><div><div class="mc-t">${esc(p.full_name)}</div><div class="mc-s">${esc(t.treatment)}</div></div><span class="debt">${money(trRemain(t))}</span></div><div style="margin-top:8px">${bar}</div>`}});
+  return h+`<div class="card">${listView([{l:'Pasiyent'},{l:'Müalicə'},{l:'Filial'},{l:'Ödəniş gedişi'},{l:'Qalıq',c:'num'}],rows,emptyBox('check','Qalıq borc yoxdur',''))}</div>`;
+ }
+ const rows=pays.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).map(x=>{const p=ptById(x.patientId),t=trById(x.treatmentId);const mi=`<span class="m-ic ${x.method}" data-tip="${PAY_METHODS[x.method]}">${ic(x.method==='cash'?'cash':x.method==='pos'?'wallet':'card',16)}</span>`;
+  return{a:`data-act="open-tr" data-id="${t.id}"`,cells:[`<span class="nowrap">${fmtDate(x.date)}</span>`,pcell(p),esc(t.treatment),`<div class="row">${mi}<span class="small">${PAY_METHODS[x.method]}</span></div>`,branchTag(x.branch),`<b>${money(x.amount)}</b>`],
+  card:`<div class="mc-row"><div class="row">${mi}<div><div class="mc-t">${esc(p.full_name)}</div><div class="mc-s">${fmtDate(x.date)} · ${esc(t.treatment)}</div></div></div><b class="nowrap">${money(x.amount)}</b></div>`}});
+ return h+`<div class="card">${listView([{l:'Tarix'},{l:'Pasiyent'},{l:'Müalicə'},{l:'Üsul'},{l:'Filial'},{l:'Məbləğ',c:'num'}],rows,emptyBox('wallet','Ödəniş yoxdur',''))}</div>`;
+}
+
+function pageFollowups(){
+ let h=pageHead('Təqiblər',`<span class="pill-note">${ic('info',14)}WhatsApp mesajı sistemdən göndərilmir — yalnız nəticə qeyd olunur</span>`,`<button class="btn btn-primary" data-act="new-fu">${ic('plus',16)}Yeni təqib</button>`);
+ const all=DB.followups.filter(fuVisible);const c=s=>all.filter(f=>fuStatus(f)===s).length;
+ const FC={overdue:'#e34948',pending:'#eda100',contacted:'#2a78d6',completed:'#16a34a'};
+ h+=`<div class="fu-tabs">${['overdue','pending','contacted','completed'].map(k=>`<button class="fu-n ${UI.fuTab===k?'on':''} ${k==='overdue'&&c(k)?'hot':''}" data-act="fu-tab" data-v="${k}"><i style="background:${FC[k]}"></i><b>${c(k)}</b><span>${FU_STATUS[k].l}</span></button>`).join('')}<button class="fu-n ${UI.fuTab==='open'||UI.fuTab==='all'?'on':''}" data-act="fu-tab" data-v="${UI.fuTab==='open'?'all':'open'}"><i style="background:#9ca3af"></i><b>${UI.fuTab==='all'?all.length:all.length-c('completed')}</b><span>${UI.fuTab==='all'?'Hamısı':'Açıq'}</span></button></div>`;
+ const f=all.filter(x=>{const s=fuStatus(x);return UI.fuTab==='all'||(UI.fuTab==='open'?s!=='completed':s===UI.fuTab)}).sort((a,b)=>a.due.localeCompare(b.due));
+ const rows=f.map(x=>{const p=ptById(x.patientId),s=fuStatus(x),last=x.log[x.log.length-1];
+  return{a:`data-act="fu-outcome" data-id="${x.id}"`,cells:[pcell(p),`<span class="nowrap ${s==='overdue'?'debt':''}">${fmtDate(x.due)}</span>`,`<div class="row"><span class="mini-av">${initials(userById(x.coordinatorId).name)}</span>${esc(userById(x.coordinatorId).name)}</div>`,badge(FU_STATUS[s]),`<div class="small clamp1" style="max-width:280px">${esc(last?last.text:x.note)}</div>`,s!=='completed'?`<button class="btn btn-sm btn-soft" data-act="fu-outcome" data-id="${x.id}">${ic('check',14)}Nəticə</button>`:''],
+  card:`<div class="mc-row"><div class="pcell"><span class="m-ic wa">${ic('chat',16)}</span><div><div class="mc-t">${esc(p.full_name)}</div><div class="mc-s">${fmtDate(x.due)} · ${esc(userById(x.coordinatorId).name)}</div></div></div>${badge(FU_STATUS[s])}</div>`}});
+ return h+`<div class="card">${listView([{l:'Pasiyent'},{l:'Son tarix'},{l:'Məsul'},{l:'Status'},{l:'Son nəticə'},{l:''}],rows,emptyBox('check','Təqib yoxdur',''))}</div>`;
+}
+
+
+/* ====================================================================
+   UI primitives: modal / bottom sheet, toast, fields
+   ==================================================================== */
+function openModal({title,sub,body,foot,size,onSubmit,onMount}){
+ const root=document.getElementById('modal-root');
+ const wrap=document.createElement('div');wrap.className='overlay';
+ wrap.innerHTML=`<form class="modal ${size||''}" novalidate><div class="sheet-grip"></div><div class="m-head"><div><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:''}</div><button type="button" class="icon-btn" data-close aria-label="Bağla">${ic('x',18)}</button></div><div class="m-body">${body}</div>${foot?`<div class="m-foot">${foot}</div>`:''}</form>`;
+ root.appendChild(wrap);document.body.style.overflow='hidden';
+ const form=wrap.querySelector('form');
+ wrap.addEventListener('mousedown',e=>{if(e.target===wrap)closeModal(wrap)});
+ wrap.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(wrap)));
+ form.addEventListener('submit',e=>{e.preventDefault();onSubmit&&onSubmit(form,wrap)});
+ onMount&&onMount(form,wrap);
+ return wrap;
+}
+function closeModal(w){w&&w.remove();if(!document.querySelector('#modal-root .overlay'))document.body.style.overflow=''}
+function closeAll(){document.getElementById('modal-root').innerHTML='';document.body.style.overflow=''}
+function toast(msg,err,action){
+ const r=document.getElementById('toast-root');const t=document.createElement('div');t.className='toast'+(err?' err':'');
+ t.innerHTML=`${ic(err?'alert':'check',18)}<span style="flex:1">${msg}</span>`+(action?`<button type="button">${action.l}</button>`:'');
+ if(action)t.querySelector('button').onclick=()=>{t.remove();action.f()};
+ r.appendChild(t);setTimeout(()=>t.remove(),action?8000:3800);
+}
+const fld=(name,label,input,o={})=>`<div class="fld ${o.full?'full':''}" data-f="${name}"><label>${label}${o.req?' <span class="req">*</span>':''}</label>${input}${o.hint?`<div class="hint">${o.hint}</div>`:''}<div class="err"></div></div>`;
+const opt=(v,l,sel,dis)=>`<option value="${esc(v)}" ${sel?'selected':''} ${dis?'disabled':''}>${esc(l)}</option>`;
+const dg=(k,v)=>`<div><div class="k">${k}</div><div class="v">${v}</div></div>`;
+function setErr(form,name,msg){const f=form.querySelector(`[data-f="${name}"]`);if(!f)return;f.classList.toggle('invalid',!!msg);f.querySelector('.err').innerHTML=msg||''}
+function clearErrs(form){form.querySelectorAll('.fld.invalid').forEach(f=>f.classList.remove('invalid'))}
+function branchOptions(){return isRole('owner')?['b1','b2']:me().branches}
+function defaultBranch(){const s=scopeBranch();if(s!=='all')return s;return branchOptions()[0]}
+const ptOptions=sel=>`<option value="">Pasiyenti seçin</option>`+DB.patients.slice().sort((a,b)=>a.full_name.localeCompare(b.full_name,'az')).map(p=>opt(p.id,p.full_name+' — '+p.phone,p.id===sel)).join('');
+function readThumb(file){return new Promise(res=>{if(!file.type.startsWith('image/'))return res(null);const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,160/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.7))};im.onerror=()=>res(null);im.src=fr.result};fr.onerror=()=>res(null);fr.readAsDataURL(file)})}
+async function addDocs(files,pid,tid,kind){for(const f of files){const img=f.type.startsWith('image/');DB.docs.push({id:uid('d'),patientId:pid,treatmentId:tid||null,name:f.name,kind:kind||(img?'photo':'document'),date:TODAY,by:me().id,thumb:await readThumb(f)})}}
+
+/* ====================================================================
+   Patient registration (BRD §5.1) — unique PIN & phone
+   ==================================================================== */
+function patientForm(pre={}){
+ const q=(pre.q||'').trim();let name='',phone='',pin='';
+ if(q){const dq=digits(q);if(/^[A-Za-z0-9]{7}$/.test(q)&&/[A-Za-z]/.test(q)&&/\d/.test(q))pin=q.toUpperCase();else if(dq.length>=5&&!/[A-Za-zƏəİıÖöÜüŞşÇçĞğ]/.test(q))phone=q;else name=q}
+ const body=(q?`<div style="margin-bottom:12px"><span class="pill-note warn">${ic('search',14)}“${esc(q)}” tapılmadı</span></div>`:'')+`<div class="form">
+  ${fld('full_name','Ad, soyad',`<input class="input" name="full_name" value="${esc(name)}" placeholder="Məs.: Rəna Quliyeva" autocomplete="off">`,{req:1,full:1})}
+  ${fld('phone','Telefon nömrəsi',`<input class="input" name="phone" type="tel" inputmode="tel" value="${esc(phone)}" placeholder="+994 50 123 45 67">`,{req:1})}
+  ${fld('pin','FİN kod',`<input class="input" name="pin" maxlength="7" value="${esc(pin)}" placeholder="7 simvol" style="text-transform:uppercase" autocomplete="off">`,{req:1})}
+  ${fld('dob','Doğum tarixi',`<input class="input" name="dob" type="date" max="${TODAY}">`,{req:1})}
+  ${fld('gender','Cins',`<div class="radio-chips"><label><input type="radio" name="gender" value="Kişi">Kişi</label><label><input type="radio" name="gender" value="Qadın">Qadın</label></div>`,{req:1})}
+  ${fld('address','Ünvan',`<input class="input" name="address" placeholder="Şəhər, rayon, küçə">`,{req:1,full:1})}
+  ${fld('emergency','Təcili əlaqə',`<input class="input" name="emergency" placeholder="Ad, soyad (qohumluq) — telefon">`,{req:1,full:1})}
+  ${fld('idimg','Şəxsiyyət vəsiqəsinin şəkli',`<input class="input" name="idimg" type="file" accept="image/*" style="padding-top:7px">`,{req:1,full:1})}
+ </div>`;
+ openModal({title:'Yeni pasiyent qeydiyyatı',size:'lg',body,
+  foot:`<button type="button" class="btn" data-close>İmtina</button><button type="submit" class="btn btn-primary">${ic('check',16)}Qeydiyyata al</button>`,
+  onSubmit:(form)=>{
+   clearErrs(form);const el=form.elements;let ok=true;const E=(k,m)=>{setErr(form,k,m);ok=false};
+   const nm=el.full_name.value.trim().replace(/\s+/g,' ');if(nm.split(' ').length<2)E('full_name','Ad və soyadı daxil edin');
+   let dq=digits(el.phone.value);if(dq.startsWith('994'))dq=dq.slice(3);else if(dq.startsWith('0'))dq=dq.slice(1);
+   const link=p=>` <a href="#/patient/${p.id}" data-act="open-patient" data-id="${p.id}">Profili aç</a>`;
+   if(dq.length!==9)E('phone','Telefon nömrəsi düzgün deyil (məs.: +994 50 123 45 67)');
+   else{const ex=DB.patients.find(p=>digits(p.phone).slice(-9)===dq);if(ex)E('phone',`Bu nömrə artıq <b>${esc(ex.full_name)}</b> adlı pasiyentə məxsusdur.`+link(ex))}
+   const pin=el.pin.value.trim().toUpperCase();
+   if(!/^[A-Z0-9]{7}$/.test(pin))E('pin','FİN 7 simvoldan (hərf və rəqəm) ibarət olmalıdır');
+   else{const ex=DB.patients.find(p=>p.pin===pin);if(ex)E('pin',`Bu FİN artıq <b>${esc(ex.full_name)}</b> adlı pasiyentə məxsusdur.`+link(ex))}
+   const dob=el.dob.value;if(!dob)E('dob','Doğum tarixini seçin');else if(dob>TODAY)E('dob','Gələcək tarix seçilə bilməz');
+   const g=form.querySelector('input[name=gender]:checked');if(!g)E('gender','Cinsi seçin');
+   if(!el.address.value.trim())E('address','Ünvanı daxil edin');
+   if(!el.emergency.value.trim())E('emergency','Təcili əlaqə məlumatını daxil edin');
+   const file=el.idimg.files[0];if(!file)E('idimg','Şəxsiyyət vəsiqəsinin şəklini yükləyin');
+   if(!ok){toast('Formada düzəldilməli sahələr var',true);return}
+   const id=uid('p');
+   DB.patients.push({id,full_name:nm,gender:g.value,dob,phone:`+994 ${dq.slice(0,2)} ${dq.slice(2,5)} ${dq.slice(5,7)} ${dq.slice(7)}`,pin,address:el.address.value.trim(),emergency:el.emergency.value.trim(),national_id_image:file.name,createdAt:TODAY,createdBranch:defaultBranch()});
+   save();closeAll();UI.ptQuery='';go('patient/'+id);
+   toast('Pasiyent qeydiyyata alındı',false,perm().manageAppt?{l:'Qəbul yarat',f:()=>apptForm({pid:id})}:null);
+  }});
+}
+
+/* ====================================================================
+   Appointments (BRD §7) — create / edit / conflict detection
+   ==================================================================== */
+function findConflicts(a){
+ if(a.status==='cancelled')return[];
+ const s=t2m(a.start),e=s+(+a.duration);
+ return DB.appointments.filter(x=>x.id!==a.id&&x.date===a.date&&x.status!=='cancelled'&&t2m(x.start)<e&&s<t2m(x.start)+(+x.duration)&&(x.dentistId===a.dentistId||x.roomId===a.roomId));
+}
+function apptForm(pre={},ex){
+ if(!perm().manageAppt){toast('Qəbul yaratmaq sizin rolunuz üçün mümkün deyil',true);return}
+ const brs=branchOptions();
+ let br=ex?ex.branch:defaultBranch();
+ if(!ex&&pre.dentist){const d=userById(pre.dentist);if(!d.branches.includes(br))br=brs.find(b=>d.branches.includes(b))||br}
+ const a=ex?{...ex}:{id:null,patientId:pre.pid||'',dentistId:pre.dentist||(isRole('dentist')?me().id:''),branch:br,roomId:'',date:(pre.date&&pre.date>=TODAY)?pre.date:(UI.apptDate>=TODAY?UI.apptDate:TODAY),start:pre.time||'10:00',duration:30,treatment:'',status:'scheduled',notes:''};
+ const times=[];for(let m=9*60;m<19*60;m+=15)times.push(m2t(m));if(!times.includes(a.start))times.push(a.start);
+ const allBr=brs.includes(a.branch)?brs:brs.concat(a.branch);
+ const body=`<div class="banner danger form-err" id="conf"></div><div class="form">
+  ${fld('patientId','Pasiyent',`<select class="select" name="patientId" ${pre.pid||ex?'disabled':''}>${ptOptions(a.patientId)}</select>`,{req:1,full:1})}
+  ${fld('branch','Filial',`<select class="select" name="branch" ${allBr.length<2?'disabled':''}>${allBr.map(b=>opt(b,BRANCHES[b],b===a.branch)).join('')}</select>`,{req:1})}
+  ${fld('dentistId','Həkim',`<select class="select" name="dentistId"></select>`,{req:1})}
+  ${fld('roomId','Kabinet',`<select class="select" name="roomId"></select>`,{req:1})}
+  ${fld('treatment','Xidmət',`<select class="select" name="treatment"><option value="">—</option>${SERVICES.map(s=>opt(s[0],s[0],s[0]===a.treatment)).join('')}</select>`)}
+  ${fld('date','Tarix',`<input class="input" type="date" name="date" value="${a.date}">`,{req:1})}
+  ${fld('start','Başlama vaxtı',`<select class="select" name="start">${times.map(t=>opt(t,t,t===a.start)).join('')}</select>`,{req:1})}
+  ${fld('duration','Müddət',`<select class="select" name="duration">${DURATIONS.map(x=>opt(x,x+' dəqiqə',+x===+a.duration)).join('')}</select>`,{req:1})}
+  ${ex?fld('status','Status',`<select class="select" name="status">${Object.entries(APPT_STATUS).filter(([k])=>k!=='completed').map(([k,o])=>opt(k,o.l,k===a.status)).join('')}</select>`,{req:1}):''}
+  ${fld('notes','Qeyd',`<textarea class="input" name="notes">${esc(a.notes)}</textarea>`,{full:1})}
+ </div>`;
+ const vals=f=>{const el=f.elements;return{...a,patientId:el.patientId.value,branch:el.branch.value,dentistId:el.dentistId.value,roomId:el.roomId.value,treatment:el.treatment.value,date:el.date.value,start:el.start.value,duration:+el.duration.value,status:el.status?el.status.value:a.status,notes:el.notes.value.trim()}};
+ const fill=f=>{const el=f.elements,b=el.branch.value;const ds=DENTISTS.filter(d=>d.branches.includes(b));const cur=el.dentistId.value||a.dentistId;
+  el.dentistId.innerHTML=`<option value="">Həkimi seçin</option>`+ds.map(d=>opt(d.id,d.name+(d.branches.length>1?' (hər iki filial)':''),d.id===cur)).join('');
+  const rs=ROOMS.filter(r=>r.branch===b);const cr=el.roomId.value||a.roomId;el.roomId.innerHTML=rs.map((r,i)=>opt(r.id,r.name,cr?r.id===cr:i===0)).join('')};
+ const check=f=>{const v=vals(f),box=f.querySelector('#conf');if(!v.dentistId||!v.date){box.classList.remove('show');return[]}
+  const cs=findConflicts(v);
+  box.innerHTML=cs.length?`${ic('alert',17)}<div><b>Konflikt aşkar edildi — bu vaxt artıq tutulub:</b>${cs.map(x=>{const why=x.dentistId===v.dentistId?`Həkim məşğuldur: ${esc(userById(x.dentistId).name)}`:`Kabinet məşğuldur: ${BRANCHES[x.branch]}, ${roomById(x.roomId).name}`;return `<div>• ${why} — ${x.start}–${apptEnd(x)}, ${esc(ptById(x.patientId).full_name)} (${BRANCHES[x.branch]})</div>`}).join('')}<div style="margin-top:4px">Başqa vaxt, həkim və ya kabinet seçin.</div></div>`:'';
+  box.classList.toggle('show',cs.length>0);return cs};
+ openModal({title:ex?'Qəbulu redaktə et':'Yeni qəbul',sub:ex?esc(ptById(ex.patientId).full_name):'',size:'lg',body,
+  foot:`<button type="button" class="btn" data-close>İmtina</button><button type="submit" class="btn btn-primary">${ic('check',16)}${ex?'Yadda saxla':'Qəbul yarat'}</button>`,
+  onMount:f=>{fill(f);f.elements.branch.addEventListener('change',()=>{f.elements.dentistId.value='';a.dentistId=isRole('dentist')?me().id:'';a.roomId='';f.elements.roomId.value='';fill(f);check(f)});f.addEventListener('change',()=>check(f));if(a.dentistId)check(f)},
+  onSubmit:f=>{clearErrs(f);const v=vals(f);let ok=true;const E=(k,m)=>{setErr(f,k,m);ok=false};
+   if(!v.patientId)E('patientId','Pasiyenti seçin');if(!v.dentistId)E('dentistId','Həkimi seçin');if(!v.roomId)E('roomId','Kabineti seçin');if(!v.date)E('date','Tarixi seçin');
+   if(!ok)return;
+   if(check(f).length){toast('Konflikt: seçilmiş vaxt artıq tutulub',true);f.querySelector('.m-body').scrollTop=0;return}
+   if(ex)Object.assign(ex,v);else DB.appointments.push({...v,id:uid('a')});
+   save();closeAll();render();
+   toast(ex?'Qəbul yeniləndi':`Qəbul yaradıldı: ${fmtDate(v.date)}, ${v.start}`,false,{l:'Təqvimdə bax',f:()=>{UI.apptDate=v.date;go('appointments')}});
+  }});
+}
+function openAppt(id){
+ const a=apById(id);if(!a)return;if(a.status==='completed')return openTr(id);
+ const p=ptById(a.patientId),P=perm();
+ let body=`<div class="visit-sum"><span class="avatar">${initials(p.full_name)}</span><div><a href="#/patient/${p.id}" data-act="open-patient" data-id="${p.id}"><b>${esc(p.full_name)}</b></a><div class="small muted">${esc(p.phone)}</div></div><span style="margin-left:auto">${badge(APPT_STATUS[a.status])}</span></div>
+  <div class="facts">
+   <div class="fact">${ic('calendar',18)}<div><b>${fmtDate(a.date)}</b><span>${relDay(a.date)!==fmtDate(a.date)?relDay(a.date):'Tarix'}</span></div></div>
+   <div class="fact">${ic('clock',18)}<div><b>${a.start}–${apptEnd(a)}</b><span>${a.duration} dəq</span></div></div>
+   <div class="fact">${ic('user',18)}<div><b>${esc(userById(a.dentistId).name.replace('Dr. ',''))}</b><span>Həkim</span></div></div>
+   <div class="fact">${ic('pin',18)}<div><b>${BRANCHES[a.branch]}</b><span>${roomById(a.roomId).name}</span></div></div>
+   <div class="fact">${ic('tooth',18)}<div><b>${esc(a.treatment||'—')}</b><span>Xidmət</span></div></div>
+  </div>${a.notes?`<div class="tl-note" style="margin-top:12px">${esc(a.notes)}</div>`:''}`;
+ if(!P.manageAppt)body+=`<div style="margin-top:14px"><span class="pill-note">${ic('lock',14)}Yalnız baxış</span></div>`;
+ let foot=`<button type="button" class="btn left" data-act="open-patient" data-id="${p.id}">${ic('user',16)}Profil</button>`;
+ if(P.manageAppt&&a.status==='scheduled')foot+=`<button type="button" class="btn btn-danger" data-act="appt-status" data-id="${a.id}" data-s="noshow">Gəlmədi</button><button type="button" class="btn btn-danger" data-act="appt-status" data-id="${a.id}" data-s="cancelled">Ləğv et</button><button type="button" class="btn" data-act="edit-appt" data-id="${a.id}">${ic('edit',15)}Redaktə</button>`;
+ else if(P.manageAppt)foot+=`<button type="button" class="btn" data-act="edit-appt" data-id="${a.id}">${ic('edit',15)}Redaktə</button>`;
+ if(a.status==='scheduled')foot+=`<button type="button" class="btn btn-primary" data-act="complete-appt" data-id="${a.id}">${ic('check',16)}Tamamla</button>`;
+ openModal({title:'Qəbul',body,foot});
+}
+function setApptStatus(id,s){const a=apById(id);a.status=s;save();closeAll();render();toast('Qəbulun statusu: '+APPT_STATUS[s].l)}
+
+/* ====================================================================
+   Treatments (BRD §8) — record, plan, details
+   ==================================================================== */
+/* Completing a visit (ex = scheduled visit) or editing a completed one.
+   Without ex: record a walk-in / archive visit that is already done. Same entity as the appointment. */
+function trForm(pre={},ex){
+ const fin=!!perm().finance&&(ex?finVisible({...ex,status:'completed'}):true);
+ const brs=branchOptions();
+ const isNew=!ex;
+ const t=ex?{...ex}:{patientId:pre.pid||'',branch:defaultBranch(),dentistId:isRole('dentist')?me().id:'',roomId:'',date:TODAY,start:'10:00',duration:30,treatment:'',price:null,discount:0,notes:''};
+ if(!isNew&&t.price==null&&t.treatment){const s=SERVICES.find(x=>x[0]===t.treatment);if(s&&fin)t.price=s[1]}
+ if(!isNew&&t.status!=='completed'&&t.date>TODAY)t.date=TODAY;
+ const allBr=brs.includes(t.branch)?brs:brs.concat(t.branch);
+ const svc=SERVICES.map(s=>s[0]);if(t.treatment&&!svc.includes(t.treatment))svc.push(t.treatment);
+ const times=[];for(let m=9*60;m<19*60;m+=15)times.push(m2t(m));if(!times.includes(t.start))times.push(t.start);
+ const head=isNew?'':`<div class="visit-sum"><span class="avatar">${initials(ptById(t.patientId).full_name)}</span><div><b>${esc(ptById(t.patientId).full_name)}</b><div class="small muted">${fmtDate(t.date)} · ${t.start} · ${esc(userById(t.dentistId).name)} · ${BRANCHES[t.branch]}</div></div></div>`;
+ const body=head+(isRole('archivist')?`<div style="margin-bottom:12px"><span class="pill-note">${ic('lock',14)}Maliyyə sahələri gizlidir</span></div>`:'')+`<div class="form">
+  ${isNew?fld('patientId','Pasiyent',`<select class="select" name="patientId" ${t.patientId?'disabled':''}>${ptOptions(t.patientId)}</select>`,{req:1,full:1})+
+   fld('branch','Filial',`<select class="select" name="branch" ${allBr.length<2?'disabled':''}>${allBr.map(b=>opt(b,BRANCHES[b],b===t.branch)).join('')}</select>`,{req:1})+
+   fld('dentistId','Həkim',`<select class="select" name="dentistId"></select>`,{req:1})+
+   fld('date','Tarix',`<input class="input" type="date" name="date" value="${t.date}" max="${TODAY}">`,{req:1})+
+   fld('start','Vaxt',`<select class="select" name="start">${times.map(x=>opt(x,x,x===t.start)).join('')}</select>`,{req:1})+
+   fld('roomId','Kabinet',`<select class="select" name="roomId"></select>`,{req:1})+
+   fld('duration','Müddət',`<select class="select" name="duration">${DURATIONS.map(x=>opt(x,x+' dəq',+x===+t.duration)).join('')}</select>`,{req:1}):''}
+  ${fld('treatment','Xidmət / müalicə',`<select class="select" name="treatment"><option value="">Seçin</option>${svc.map(s=>opt(s,s,s===t.treatment)).join('')}</select>`,{req:1,full:!fin})}
+  ${fin?fld('price','Qiymət (AZN)',`<input class="input" type="number" min="0" step="1" inputmode="decimal" name="price" value="${t.price??''}">`,{req:1})+fld('discount','Endirim (AZN)',`<input class="input" type="number" min="0" step="1" inputmode="decimal" name="discount" value="${t.discount||0}">`)+fld('final','Yekun qiymət',`<input class="input" name="final" readonly>`):''}
+  ${fld('notes','Klinik qeydlər',`<textarea class="input" name="notes">${esc(t.notes)}</textarea>`,{full:1})}
+  ${fld('files','Şəkillər / sənədlər',`<input class="input" type="file" name="files" multiple accept="image/*,.pdf" style="padding-top:7px">`,{full:1})}
+ </div>`;
+ const fill=f=>{const el=f.elements;if(!el.branch)return;const b=el.branch.value,cur=el.dentistId.value||t.dentistId;el.dentistId.innerHTML=`<option value="">Həkimi seçin</option>`+DENTISTS.filter(d=>d.branches.includes(b)).map(d=>opt(d.id,d.name,d.id===cur)).join('');
+  el.roomId.innerHTML=ROOMS.filter(r=>r.branch===b).map((r,i)=>opt(r.id,r.name,i===0)).join('')};
+ const calc=f=>{if(!fin)return;const el=f.elements,pr=+el.price.value||0,dc=+el.discount.value||0;el.final.value=money(Math.max(0,pr-dc))};
+ openModal({title:isNew?'Müalicə qeydi':(ex.status==='completed'?'Qəbulu redaktə et':'Qəbulu tamamla'),size:'lg',body,
+  foot:`<button type="button" class="btn" data-close>İmtina</button><button type="submit" class="btn btn-primary">${ic('check',16)}${isNew||ex.status==='completed'?'Yadda saxla':'Tamamla'}</button>`,
+  onMount:f=>{const el=f.elements;fill(f);calc(f);
+   if(el.branch)el.branch.addEventListener('change',()=>{t.dentistId='';el.dentistId.value='';fill(f)});
+   el.treatment.addEventListener('change',()=>{if(!fin)return;const s=SERVICES.find(x=>x[0]===el.treatment.value);if(s){el.price.value=s[1];calc(f)}});
+   if(fin){el.price.addEventListener('input',()=>calc(f));el.discount.addEventListener('input',()=>calc(f))}},
+  onSubmit:async f=>{clearErrs(f);const el=f.elements;let ok=true;const E=(k,m)=>{setErr(f,k,m);ok=false};
+   const v={treatment:el.treatment.value,notes:el.notes.value.trim(),status:'completed'};
+   if(isNew){Object.assign(v,{patientId:el.patientId.value,branch:el.branch.value,dentistId:el.dentistId.value,date:el.date.value,start:el.start.value,roomId:el.roomId.value,duration:+el.duration.value});
+    if(!v.patientId)E('patientId','Pasiyenti seçin');if(!v.dentistId)E('dentistId','Həkimi seçin');if(!v.date)E('date','Tarixi seçin');else if(v.date>TODAY)E('date','Gələcək tarix ola bilməz')}
+   else if(t.date!==ex.date)v.date=t.date;
+   if(!v.treatment)E('treatment','Müalicəni seçin');
+   if(fin){const pr=el.price.value===''?NaN:+el.price.value,dc=+el.discount.value||0;
+    if(isNaN(pr)||pr<0)E('price','Qiyməti daxil edin');else if(dc<0||dc>pr)E('discount','Endirim 0 ilə qiymət arasında olmalıdır');
+    v.price=pr;v.discount=dc}
+   else if(isNew){v.price=null;v.discount=0}
+   if(!ok)return;
+   if(isNew){const cs=findConflicts({...v,id:null});if(cs.length){const x=cs[0];toast(`Konflikt: ${x.dentistId===v.dentistId?esc(userById(x.dentistId).name):roomById(x.roomId).name} ${x.start}–${apptEnd(x)} məşğuldur`,true);return}}
+   let id;if(ex){Object.assign(ex,v);id=ex.id}else{id=uid('t');DB.appointments.push({id,...v,createdBy:me().id})}
+   const files=[...el.files.files];const pid=ex?ex.patientId:v.patientId;if(files.length)await addDocs(files,pid,id);
+   save();closeAll();UI.histBranch='all';
+   const t2=trById(id);
+   if(route().page==='patient'&&route().id===pid)render();else go('patient/'+pid);
+   setTimeout(()=>{const n=document.getElementById('tl-'+id);if(n){n.classList.add('flash');n.scrollIntoView({block:'center',behavior:'smooth'})}},150);
+   toast(ex&&ex.status==='completed'&&pre.wasDone?'Qəbul yeniləndi':'Qəbul tamamlandı — müalicə tarixçəyə düşdü',false,(perm().addPay&&finVisible(t2)&&trRemain(t2)>0)?{l:'Ödəniş',f:()=>payForm({pid,tid:id})}:null);
+  }});
+}
+function openTr(id){
+ const t=trById(id);if(!t)return;const p=ptById(t.patientId),P=perm(),fv=finVisible(t);
+ const docs=DB.docs.filter(d=>d.treatmentId===id&&(fv||d.kind!=='contract'));
+ const pays=DB.payments.filter(x=>x.treatmentId===id).sort((a,b)=>a.date.localeCompare(b.date));
+ let body=`<div class="visit-sum"><span class="avatar">${initials(p.full_name)}</span><div><a href="#/patient/${p.id}" data-act="open-patient" data-id="${p.id}"><b>${esc(p.full_name)}</b></a><div class="small muted">${esc(p.phone)}</div></div><span style="margin-left:auto">${badge(APPT_STATUS.completed)}</span></div>
+  <div class="facts" style="margin-bottom:14px"><div class="fact">${ic('calendar',18)}<div><b>${fmtDate(t.date)}</b><span>${t.start||''}</span></div></div><div class="fact">${ic('user',18)}<div><b>${esc(userById(t.dentistId).name.replace('Dr. ',''))}</b><span>Həkim</span></div></div><div class="fact">${ic('pin',18)}<div><b>${BRANCHES[t.branch]}</b><span>${t.roomId?roomById(t.roomId).name:''}</span></div></div></div>`;
+ if(t.notes)body+=`<div class="tl-note" style="margin:0 0 16px">${esc(t.notes)}</div>`;
+ let rem=0;
+ if(fv){
+  if(t.price==null)body+=`<div class="banner warn">${ic('alert',17)}<div>Qiymət təyin edilməyib — “Redaktə” ilə daxil edin.</div></div>`;
+  else{const fnl=trFinal(t),paid=trPaid(t);rem=trRemain(t);const pct=fnl?Math.round(paid/fnl*100):100;
+   body+=`<div class="section-t" style="margin:0 0 8px">Ödəniş hesablanması</div><div class="calc">
+    <div class="ln"><span>Müalicə qiyməti</span><b>${money(t.price)}</b></div><div class="arrow">↓</div>
+    <div class="ln"><span>Endirim</span><span>− ${money(t.discount||0)}</span></div>
+    <div class="ln tot"><span>Yekun qiymət</span><span>${money(fnl)}</span></div><div class="arrow">↓</div>
+    <div class="ln"><span>Ödənişlər (${pays.length})</span><span>− ${money(paid)}</span></div>
+    <div class="ln tot rem ${rem>0?'':'ok'}"><span>Qalıq borc</span><span>${money(rem)}</span></div></div>
+    <div class="progress" style="margin:10px 0 4px"><i style="width:${pct}%"></i></div><div class="small muted">${pct}% ödənilib</div>`;
+   body+=`<div class="section-t" style="margin:18px 0 8px">Ödəniş tarixçəsi</div><div class="card">${pays.length?pays.map((x,i)=>`<div class="li" style="cursor:default"><div class="grow"><div class="main-t">${i+1}-ci ödəniş · ${money(x.amount)}</div><div class="sub-t">${fmtDate(x.date)} · ${PAY_METHODS[x.method]} · ${BRANCHES[x.branch]} · Qeyd edən: ${esc(userById(x.recordedBy).name)}${x.note?' · '+esc(x.note):''}</div></div></div>`).join(''):`<div class="empty" style="padding:16px">Hələ ödəniş yoxdur</div>`}</div>`}
+ }else if(P.finance)body+=`<div class="scope-note" style="margin-bottom:8px">${ic('lock',13)}Bu müalicənin maliyyə məlumatı sizin ${P.finance==='own'?'rolunuz':'filialınız'} üçün göstərilmir.</div>`;
+ body+=`<div class="section-t" style="margin:18px 0 8px">Şəkillər, sənədlər${fv?' və müqavilələr':''}</div>${docs.length?`<div class="docs">${docs.map(docTile).join('')}</div>`:'<div class="small muted">Fayl yoxdur</div>'}
+  <div class="row wrap" style="margin-top:10px"><div class="upload" style="flex:1;min-width:200px" data-act="upload" data-pid="${p.id}" data-tid="${t.id}">${ic('upload',16)}Şəkil / sənəd yüklə</div>${fv&&P.addPay?`<div class="upload" style="flex:1;min-width:200px" data-act="upload" data-pid="${p.id}" data-tid="${t.id}" data-kind="contract">${ic('file',16)}Müqavilə yüklə (hissə-hissə ödəniş)</div>`:''}</div>`;
+ const foot=`<button type="button" class="btn left" data-act="open-patient" data-id="${p.id}">${ic('user',16)}Pasiyent profili</button><button type="button" class="btn" data-act="edit-tr" data-id="${t.id}">${ic('edit',15)}Redaktə</button>${P.addPay&&fv&&rem>0?`<button type="button" class="btn btn-primary" data-act="new-pay" data-pid="${p.id}" data-tid="${t.id}">${ic('wallet',16)}Ödəniş qeyd et</button>`:''}`;
+ openModal({title:esc(t.treatment),sub:`${esc(p.full_name)} · ${fmtDate(t.date)}`,size:'lg',body,foot});
+}
+/* ====================================================================
+   Payments (BRD §9) — Cash / C2C / POS, partial payments
+   ==================================================================== */
+function payForm(pre={}){
+ if(!perm().addPay){toast('Ödəniş qeyd etmək sizin rolunuz üçün mümkün deyil',true);return}
+ const brs=branchOptions();
+ const body=`<div class="form">
+  ${fld('patientId','Pasiyent',`<select class="select" name="patientId" ${pre.pid?'disabled':''}>${ptOptions(pre.pid||'')}</select>`,{req:1,full:1})}
+  ${fld('treatmentId','Müalicə',`<select class="select" name="treatmentId"></select>`,{req:1,full:1})}
+  <div class="fld full" id="calcbox"></div>
+  ${fld('amount','Məbləğ (AZN)',`<input class="input" type="number" name="amount" min="0" step="0.01" inputmode="decimal" placeholder="0">`,{req:1})}
+  ${fld('date','Ödəniş tarixi',`<input class="input" type="date" name="date" value="${TODAY}" max="${TODAY}">`,{req:1})}
+  ${fld('method','Ödəniş üsulu',`<div class="radio-chips">${Object.entries(PAY_METHODS).map(([k,l],i)=>`<label><input type="radio" name="method" value="${k}" ${i===0?'checked':''}>${l}</label>`).join('')}</div>`,{req:1,full:1})}
+  ${fld('branch','Filial',`<select class="select" name="branch" ${brs.length<2?'disabled':''}>${brs.map(b=>opt(b,BRANCHES[b],b===defaultBranch())).join('')}</select>`,{req:1})}
+  ${fld('by','Qeyd edən',`<input class="input" value="${esc(me().name)}" readonly>`)}
+  ${fld('note','Qeyd',`<input class="input" name="note" placeholder="Məs.: 2-ci hissə">`,{full:1})}
+  ${fld('contract','Müqavilə (hissə-hissə ödəniş)',`<input class="input" type="file" name="contract" multiple accept="image/*,.pdf" style="padding-top:7px">`,{full:1})}
+ </div>`;
+ const tsOf=pid=>TRS().filter(t=>t.patientId===pid&&finVisible(t)&&trRemain(t)>0).sort((a,b)=>b.date.localeCompare(a.date));
+ const calc=f=>{const t=trById(f.elements.treatmentId.value),box=f.querySelector('#calcbox');if(!t){box.innerHTML='';return}
+  const amt=Math.max(0,+f.elements.amount.value||0),before=trRemain(t),after=Math.max(0,before-amt);
+  box.innerHTML=`<label>Hesablama</label><div class="calc"><div class="ln"><span>Müalicə qiyməti</span><span>${money(t.price)}</span></div><div class="ln"><span>Endirim</span><span>− ${money(t.discount||0)}</span></div><div class="ln tot"><span>Yekun qiymət</span><span>${money(trFinal(t))}</span></div><div class="ln"><span>Əvvəl ödənilib</span><span>− ${money(trPaid(t))}</span></div><div class="ln"><span>Bu ödəniş</span><span>− ${money(amt)}</span></div><div class="ln tot rem ${after>0?'':'ok'}"><span>Ödənişdən sonra qalıq</span><span>${money(after)}</span></div></div>`;
+  setErr(f,'amount',amt>before+1e-9?`Məbləğ qalıq borcdan (${money(before)}) çox ola bilməz`:'')};
+ const fillT=f=>{const el=f.elements,ts=tsOf(el.patientId.value);
+  el.treatmentId.innerHTML=ts.length?ts.map(t=>opt(t.id,`${t.treatment} — ${fmtDate(t.date)}, ${BRANCHES[t.branch]} — qalıq ${money(trRemain(t))}`,t.id===pre.tid)).join(''):`<option value="">${el.patientId.value?'Ödənilməmiş müalicə yoxdur':'Əvvəlcə pasiyenti seçin'}</option>`;
+  const t=trById(el.treatmentId.value);if(t&&brs.includes(t.branch))el.branch.value=t.branch;calc(f)};
+ openModal({title:'Ödəniş qeyd et',size:'lg',body,
+  foot:`<button type="button" class="btn" data-close>İmtina</button><button type="submit" class="btn btn-primary">${ic('check',16)}Ödənişi qeyd et</button>`,
+  onMount:f=>{const el=f.elements;fillT(f);el.patientId.addEventListener('change',()=>fillT(f));el.treatmentId.addEventListener('change',()=>{const t=trById(el.treatmentId.value);if(t&&brs.includes(t.branch))el.branch.value=t.branch;calc(f)});el.amount.addEventListener('input',()=>calc(f))},
+  onSubmit:async f=>{clearErrs(f);const el=f.elements;const t=trById(el.treatmentId.value);let ok=true;const E=(k,m)=>{setErr(f,k,m);ok=false};
+   if(!el.patientId.value)E('patientId','Pasiyenti seçin');if(!t)E('treatmentId','Ödənilməmiş müalicə seçin');
+   const amt=+el.amount.value;if(!(amt>0))E('amount','Məbləği daxil edin');else if(t&&amt>trRemain(t)+1e-9)E('amount',`Məbləğ qalıq borcdan (${money(trRemain(t))}) çox ola bilməz`);
+   if(!el.date.value)E('date','Tarixi seçin');
+   if(!ok)return;
+   DB.payments.push({id:uid('y'),patientId:t.patientId,treatmentId:t.id,amount:amt,method:f.querySelector('input[name=method]:checked').value,date:el.date.value,branch:el.branch.value,recordedBy:me().id,note:el.note.value.trim()});
+   const files=[...el.contract.files];if(files.length)await addDocs(files,t.patientId,t.id,'contract');
+   save();closeAll();render();
+   const r=trRemain(t);toast(`Ödəniş qeydə alındı: ${money(amt)}. ${r>0?'Qalıq borc: '+money(r):'Müalicə tam ödənildi'}`,false,perm().followups&&r>0?{l:'Təqib yarat',f:()=>fuForm({pid:t.patientId})}:null);
+  }});
+}
+
+/* ====================================================================
+   Follow-ups (BRD §10) — recorded, NOT sent (no WhatsApp API)
+   ==================================================================== */
+function fuForm(pre={}){
+ if(!perm().followups)return;
+ const brs=branchOptions();
+ const body=`<div style="margin-bottom:12px"><span class="pill-note">${ic('info',14)}Sistem WhatsApp mesajı göndərmir</span></div><div class="form">
+  ${fld('patientId','Pasiyent',`<select class="select" name="patientId" ${pre.pid?'disabled':''}>${ptOptions(pre.pid||'')}</select>`,{req:1,full:1})}
+  ${fld('branch','Filial',`<select class="select" name="branch" ${brs.length<2?'disabled':''}>${brs.map(b=>opt(b,BRANCHES[b],b===defaultBranch())).join('')}</select>`,{req:1})}
+  ${fld('coordinatorId','Məsul koordinator',`<select class="select" name="coordinatorId"></select>`,{req:1})}
+  ${fld('due','Son tarix',`<input class="input" type="date" name="due" value="${D(1)}">`,{req:1})}
+  ${fld('channel','Kanal',`<input class="input" value="WhatsApp" readonly>`)}
+  ${fld('note','Məqsəd / qeyd',`<textarea class="input" name="note" placeholder="Məs.: müalicədən sonra vəziyyətini soruşmaq, növbəti qəbulu xatırlatmaq"></textarea>`,{req:1,full:1})}
+ </div>`;
+ const fillC=f=>{const b=f.elements.branch.value;f.elements.coordinatorId.innerHTML=COORDS.filter(c=>c.branches.includes(b)).map(c=>opt(c.id,c.name,c.id===me().id)).join('')};
+ openModal({title:'Yeni təqib',body,
+  foot:`<button type="button" class="btn" data-close>İmtina</button><button type="submit" class="btn btn-primary">${ic('check',16)}Təqib yarat</button>`,
+  onMount:f=>{fillC(f);f.elements.branch.addEventListener('change',()=>fillC(f))},
+  onSubmit:f=>{clearErrs(f);const el=f.elements;let ok=true;const E=(k,m)=>{setErr(f,k,m);ok=false};
+   if(!el.patientId.value)E('patientId','Pasiyenti seçin');if(!el.due.value)E('due','Tarixi seçin');if(!el.note.value.trim())E('note','Məqsədi qeyd edin');if(!ok)return;
+   DB.followups.push({id:uid('f'),patientId:el.patientId.value,branch:el.branch.value,coordinatorId:el.coordinatorId.value,due:el.due.value,channel:'WhatsApp',status:'pending',note:el.note.value.trim(),log:[]});
+   save();closeAll();render();toast('Təqib yaradıldı və koordinatora təyin olundu')}});
+}
+function openFu(id){
+ const f=fuById(id);if(!f)return;const p=ptById(f.patientId),s=fuStatus(f),can=perm().followups&&s!=='completed';
+ let body=`<div class="detail-grid">${dg('Pasiyent',`<a href="#/patient/${p.id}" data-act="open-patient" data-id="${p.id}">${esc(p.full_name)}</a><div class="small muted">${esc(p.phone)}</div>`)}${dg('Status',badge(FU_STATUS[s]))}
+  ${dg('Son tarix',`<span class="${s==='overdue'?'debt':''}">${fmtDate(f.due)}${relDay(f.due)!==fmtDate(f.due)?' ('+relDay(f.due)+')':''}</span>`)}${dg('Məsul koordinator',esc(userById(f.coordinatorId).name))}${dg('Kanal','WhatsApp')}${dg('Filial',BRANCHES[f.branch])}</div>
+  <div class="small muted" style="font-weight:600;margin:14px 0 4px">Məqsəd</div><div class="tl-note" style="margin:0">${esc(f.note)||'—'}</div>
+  <div class="section-t" style="margin:18px 0 10px">Fəaliyyət tarixçəsi</div>${f.log.length?`<div class="log">${f.log.map(l=>`<div class="log-e"><div class="m">${fmtDate(l.date)} · ${esc(userById(l.by).name)} · ${FU_STATUS[l.status].l}</div><div>${esc(l.text)}</div></div>`).join('')}</div>`:'<div class="small muted">Hələ nəticə qeyd edilməyib</div>'}`;
+ if(can)body+=`<div class="section-t" style="margin:18px 0 10px">Nəticəni qeyd et</div>
+  <div style="margin-bottom:12px"><span class="pill-note">${ic('info',14)}Mesajı WhatsApp Business-də göndərin, nəticəni burada qeyd edin</span></div>
+  <div class="form">${fld('st','Yeni status',`<div class="radio-chips"><label><input type="radio" name="st" value="contacted" ${f.status!=='contacted'?'checked':''}>Əlaqə saxlanıldı</label><label><input type="radio" name="st" value="completed" ${f.status==='contacted'?'checked':''}>Tamamlandı</label></div>`,{req:1,full:1})}
+  ${fld('text','Nəticə',`<textarea class="input" name="text" placeholder="Məs.: Pasiyentlə WhatsApp vasitəsilə əlaqə saxlanıldı. Pasiyent gələn həftə üçün görüşü təsdiqlədi."></textarea>`,{req:1,full:1})}</div>`;
+ openModal({title:'Təqib',sub:`${esc(p.full_name)} · WhatsApp`,body,
+  foot:`<button type="button" class="btn left" data-act="open-patient" data-id="${p.id}">${ic('user',16)}Pasiyent profili</button>`+(can?`<button type="button" class="btn" data-close>Bağla</button><button type="submit" class="btn btn-primary">${ic('check',16)}Nəticəni yadda saxla</button>`:`<button type="button" class="btn" data-close>Bağla</button>`),
+  onSubmit:fm=>{if(!can)return;const txt=fm.elements.text.value.trim();if(!txt){setErr(fm,'text','Nəticəni yazın');return}const st=fm.querySelector('input[name=st]:checked').value;
+   f.status=st;f.log.push({date:TODAY,by:me().id,status:st,text:txt});save();closeAll();render();toast('Təqibin nəticəsi qeyd edildi: '+FU_STATUS[st].l)}});
+}
+
+/* ====================================================================
+   Mobile helpers, role switching, events, init
+   ==================================================================== */
+function mobileSearch(){
+ openModal({title:'Pasiyent axtarışı',body:`<div class="search-lg" style="margin-bottom:8px">${ic('search',19)}<input class="input" data-input="msearch" placeholder="Məs.: Əliyev, 050 214 və ya 5KD7M2A" autocomplete="off"></div><div id="msr" class="card" style="overflow:hidden"></div>`,
+  onMount:f=>setTimeout(()=>f.querySelector('input').focus(),80)});
+}
+function moreSheet(){
+ const nav=perm().nav.slice(4);
+ openModal({title:'Digər bölmələr',body:`<div class="card">${nav.map(k=>`<div class="li" data-act="nav" data-p="${k}">${ic(NAV[k].i,20)}<div class="grow main-t">${NAV[k].l}</div>${k==='followups'&&overdueCount()?`<span class="badge b-red nodot">${overdueCount()} gecikmiş</span>`:''}${ic('right',16)}</div>`).join('')}</div>`});
+}
+function switchRole(r){
+ UI.role=r;UI.ptMine=false;UI.trDentist='all';saveUI();
+ document.getElementById('userdd').innerHTML='';closeAll();
+ const{page}=route();
+ if(!allowed(page)||(page==='dashboard'&&!perm().dashboard))location.hash='#/'+defaultPage();else render();
+ toast(`Rol dəyişdirildi: ${ROLE_LABEL[r]} — ${me().name}`);
+}
+let uploadCtx=null;
+const ACT={
+ home:()=>go(defaultPage()),
+ nav:d=>{closeAll();go(d.p)},
+ userdd:()=>userDropdown(),
+ role:d=>switchRole(d.r),
+ reset:()=>{DB=seed();save();document.getElementById('userdd').innerHTML='';toast('Demo məlumatları ilkin vəziyyətə qaytarıldı');render()},
+ msearch:()=>mobileSearch(),
+ more:()=>moreSheet(),
+ 'open-patient':d=>{closeAll();const g=document.getElementById('gsearch');if(g)g.value='';const r=document.getElementById('gsr');if(r)r.innerHTML='';go('patient/'+d.id)},
+ 'new-patient':d=>{closeAll();const r=document.getElementById('gsr');if(r)r.innerHTML='';patientForm({q:d.q})},
+ back:()=>{if(history.length>1)history.back();else go('patients')},
+ 'set-branch':d=>{if(!isRole('owner'))return;UI.branch=d.v;saveUI();render()},
+ period:d=>{UI.period=d.v;render()},
+ 'appt-day':d=>{UI.apptDate=d.v;go('appointments')},
+ 'appt-shift':d=>{UI.apptDate=addDays(UI.apptDate,+d.v);render()},
+ 'appt-view':d=>{UI.apptView=d.v;render()},
+ 'new-appt':d=>{closeAll();apptForm({pid:d.pid,dentist:d.dentist,time:d.time,date:d.date})},
+ 'open-appt':d=>openAppt(d.id),
+ 'appt-status':d=>setApptStatus(d.id,d.s),
+ 'edit-appt':d=>{closeAll();apptForm({},apById(d.id))},
+ 'new-tr':d=>{closeAll();trForm({pid:d.pid})},
+ 'complete-appt':d=>{closeAll();trForm({},apById(d.id))},
+ 'fu-go':d=>{UI.fuTab=d.v==='pending'||d.v==='overdue'||d.v==='contacted'||d.v==='completed'?d.v:'open';go('followups')},
+ 'open-tr':d=>openAppt(d.id),
+ 'edit-tr':d=>{closeAll();trForm({wasDone:true},trById(d.id))},
+ 'new-pay':d=>{closeAll();payForm({pid:d.pid,tid:d.tid})},
+ 'new-fu':d=>{closeAll();fuForm({pid:d.pid})},
+ 'fu-outcome':d=>openFu(d.id),
+ 'hist-branch':d=>{UI.histBranch=d.v;render()},
+ 'hist-sort':()=>{UI.histSort=UI.histSort==='desc'?'asc':'desc';render()},
+ 'pt-mine':d=>{UI.ptMine=d.v==='1';render()},
+ 'tr-tab':d=>{UI.trTab=d.v;render()},
+ 'pay-tab':d=>{UI.payTab=d.v;go('payments')},
+ 'fu-tab':d=>{UI.fuTab=d.v;render()},
+ upload:d=>{uploadCtx={pid:d.pid,tid:d.tid||null,kind:d.kind||null};const f=document.getElementById('hidden-file');f.value='';f.click()}
+};
+document.addEventListener('click',e=>{
+ if(!e.target.closest('#tb-search')){const g=document.getElementById('gsr');if(g)g.innerHTML=''}
+ if(!e.target.closest('[data-act="userdd"]')&&!e.target.closest('#userdd')){const u=document.getElementById('userdd');if(u)u.innerHTML=''}
+ const el=e.target.closest('[data-act]');if(!el||!ACT[el.dataset.act])return;
+ e.preventDefault();ACT[el.dataset.act](el.dataset,el,e);
+});
+document.addEventListener('input',e=>{const el=e.target.closest('[data-input]');if(!el)return;const k=el.dataset.input;
+ if(k==='gsearch')renderSearchResults(el.value,'gsr');
+ if(k==='msearch')renderSearchResults(el.value,'msr');
+ if(k==='ptq'){UI.ptQuery=el.value;renderPatientList()}
+ if(k==='trq'){UI.trQuery=el.value;document.getElementById('tr-list').innerHTML=trListHtml()}
+});
+document.addEventListener('change',e=>{const el=e.target.closest('[data-change]');if(!el)return;const k=el.dataset.change;
+ if(k==='branch'){UI.branch=el.value;saveUI();render()}
+ if(k==='pdate'&&el.value){UI.period='date';UI.pDate=el.value;render()}
+ if(k==='apptdate'&&el.value){UI.apptDate=el.value;render()}
+ if(k==='trdentist'){UI.trDentist=el.value;document.getElementById('tr-list').innerHTML=trListHtml()}
+});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'){const o=document.querySelectorAll('#modal-root .overlay');if(o.length)closeModal(o[o.length-1]);const u=document.getElementById('userdd');if(u)u.innerHTML=''}
+ if(e.key==='Enter'&&e.target.id==='gsearch'){const r=searchPatients(e.target.value);if(r.length)ACT['open-patient']({id:r[0].id});else if(e.target.value.trim())ACT['new-patient']({q:e.target.value})}
+});
+document.getElementById('hidden-file').addEventListener('change',async e=>{const files=[...e.target.files];if(!files.length||!uploadCtx)return;const c=uploadCtx;await addDocs(files,c.pid,c.tid,c.kind);save();render();toast(`${files.length} fayl yükləndi`);if(c.tid&&document.querySelector('#modal-root .overlay')){closeAll();openTr(c.tid)}});
+const tipEl=document.createElement('div');tipEl.className='tip';document.body.appendChild(tipEl);
+document.addEventListener('mousemove',e=>{const t=e.target.closest&&e.target.closest('[data-tip]');if(!t){tipEl.style.display='none';return}tipEl.textContent=t.dataset.tip;tipEl.style.display='block';const w=tipEl.offsetWidth;tipEl.style.left=Math.min(e.clientX+12,innerWidth-w-8)+'px';tipEl.style.top=(e.clientY-36)+'px'});
+window.addEventListener('hashchange',()=>{closeAll();window.scrollTo(0,0);render()});
+if(!location.hash||location.hash==='#'||location.hash==='#/')location.replace('#/'+defaultPage());
+render();
+</script>
+</body>
+</html>
